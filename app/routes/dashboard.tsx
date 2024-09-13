@@ -11,38 +11,45 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FaUser, FaBell, FaCalendar, FaBookmark, FaCog, FaSignOutAlt, FaBars } from 'react-icons/fa';
 
 export const loader: LoaderFunction = async ({ request }) => {
-  const userId = await requireUserId(request);
-  const user = await getUserById(userId);
-  if (!user) {
-    throw new Response('Not Found', { status: 404 });
-  }
-
-  let bookings: ExtendedBooking[] = [];
-  let pendingInvitation = null;
-
-  if (user.role === 'team_owner') {
-    try {
-      const url = new URL(request.url);
-      const apiUrl = new URL('/api/team-owner-bookings', url.origin);
-      const bookingsResponse = await fetch(apiUrl, {
-        headers: request.headers,
-      });
-      if (!bookingsResponse.ok) {
-        throw new Error(`HTTP error! status: ${bookingsResponse.status}`);
-      }
-      const bookingsData = await bookingsResponse.json();
-      bookings = bookingsData.bookings;
-    } catch (error) {
-      console.error('Failed to fetch bookings:', error);
+  try {
+    const userId = await requireUserId(request);
+    const user = await getUserById(userId);
+    if (!user) {
+      throw new Response('Not Found', { status: 404 });
     }
-  } else if (user.role === 'contractor' && user.invitedByTeamOwner) {
-    pendingInvitation = await prisma.user.findUnique({
-      where: { id: user.invitedByTeamOwner },
-      select: { email: true }
-    });
-  }
 
-  return json({ user, bookings, pendingInvitation });
+    let bookings: ExtendedBooking[] = [];
+    let pendingInvitation = null;
+
+    if (user.role === 'team_owner') {
+      try {
+        const url = new URL(request.url);
+        const apiUrl = new URL('/api/team-owner-bookings', url.origin);
+        const bookingsResponse = await fetch(apiUrl, {
+          headers: request.headers,
+        });
+        if (!bookingsResponse.ok) {
+          throw new Error(`HTTP error! status: ${bookingsResponse.status}`);
+        }
+        const bookingsData = await bookingsResponse.json();
+        bookings = bookingsData.bookings;
+      } catch (error) {
+        console.error('Failed to fetch bookings:', error);
+      }
+    } else if (user.role === 'contractor' && user.invitedByTeamOwner) {
+      pendingInvitation = await prisma.user.findUnique({
+        where: { id: user.invitedByTeamOwner },
+        select: { email: true }
+      });
+    }
+
+    return json({ user, bookings, pendingInvitation });
+  } catch (error) {
+    if (error instanceof Response && error.status === 401) {
+      return redirect('/login');
+    }
+    throw error;
+  }
 };
 
 export const action: ActionFunction = async ({ request }) => {

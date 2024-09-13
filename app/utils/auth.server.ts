@@ -66,7 +66,6 @@ export async function requireUserId(request: Request) {
   const session = await getSession(request);
   const userId = session.get("userId");
   if (!userId || typeof userId !== "string") {
-    console.log("Unauthorized access attempt");
     throw new Response("Unauthorized", { status: 401 });
   }
   return userId;

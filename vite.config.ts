@@ -9,10 +9,10 @@ export default defineConfig({
       routes(defineRoutes) {
         return defineRoutes((route) => {
           route("/api/employees", "routes/api/employees.ts");
+          route("/api/events", "routes/api/events.ts");
         });
       },
     }),
-    
     tsconfigPaths()
   ],
   css: {

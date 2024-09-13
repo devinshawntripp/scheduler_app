@@ -5,7 +5,10 @@ import { login, createUserSession, getUserId } from "~/utils/auth.server";
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await getUserId(request);
   if (userId) return redirect("/dashboard");
-  return json({});
+  
+  const url = new URL(request.url);
+  const redirectTo = url.searchParams.get("redirectTo") || "/dashboard";
+  return json({ redirectTo });
 };
 
 export const action: ActionFunction = async ({ request }) => {

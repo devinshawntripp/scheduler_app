@@ -1,73 +1,62 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
-import { EventClickArg, DateSelectArg, EventInput } from '@fullcalendar/core';
 import { useFetcher } from '@remix-run/react';
-import EventModal from './EventModal';
-import type { ExtendedEvent } from '~/types';
 
 interface CalendarProps {
   userId: string;
 }
 
-export default function Calendar({ userId }: CalendarProps) {
-  const [selectedEvent, setSelectedEvent] = useState<EventInput | null>(null);
-  const [showModal, setShowModal] = useState(false);
-  const fetcher = useFetcher<{ events: ExtendedEvent[] }>();
+const Calendar: React.FC<CalendarProps> = React.memo(({ userId }) => {
+  const fetcher = useFetcher();
+  const [events, setEvents] = useState([]);
 
-  React.useEffect(() => {
-    if (fetcher.state === 'idle' && !fetcher.data) {
+  useEffect(() => {
+    if (userId && fetcher.state === 'idle' && !fetcher.data) {
       fetcher.load(`/api/events?userId=${userId}`);
     }
-  }, [fetcher, userId]);
+  }, [userId]);
 
-  const events = fetcher.data?.events.map(event => ({
-    id: event.id,
-    title: event.title,
-    start: event.start,
-    end: event.end,
-    description: event.description
-  })) || [];
+  useEffect(() => {
+    if (fetcher.data && fetcher.data.events) {
+      setEvents(fetcher.data.events);
+    }
+  }, [fetcher.data]);
 
-  const handleEventClick = (arg: EventClickArg) => {
-    setSelectedEvent(arg.event.toPlainObject());
-    setShowModal(true);
-  };
+  const calendarOptions = useMemo(() => ({
+    plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
+    initialView: 'timeGridWeek',
+    headerToolbar: {
+      left: 'prev,next today',
+      center: 'title',
+      right: 'dayGridMonth,timeGridWeek,timeGridDay'
+    },
+    slotDuration: '00:30:00',
+    slotLabelInterval: '01:00',
+    slotMinTime: '08:00:00',
+    slotMaxTime: '20:00:00',
+    events: events,
+    eventContent: (arg: any) => {
+      return (
+        <>
+          <b>{arg.timeText}</b>
+          <i>{arg.event.title}</i>
+        </>
+      )
+    }
+  }), [events]);
 
-  const handleDateSelect = (arg: DateSelectArg) => {
-    setSelectedEvent(null);
-    setShowModal(true);
-  };
-
-  const handleCloseModal = () => {
-    setShowModal(false);
-    setSelectedEvent(null);
-  };
+  if (fetcher.state === "loading") {
+    return <div className="text-neon-blue">Loading events...</div>;
+  }
 
   return (
-    <div>
-      <FullCalendar
-        plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-        initialView="dayGridMonth"
-        headerToolbar={{
-          left: 'prev,next today',
-          center: 'title',
-          right: 'dayGridMonth,timeGridWeek,timeGridDay',
-        }}
-        events={events}
-        selectable={true}
-        select={handleDateSelect}
-        eventClick={handleEventClick}
-      />
-      {showModal && (
-        <EventModal
-          event={selectedEvent}
-          onClose={handleCloseModal}
-          userId={userId}
-        />
-      )}
+    <div className="calendar-container">
+      <FullCalendar {...calendarOptions} />
     </div>
   );
-}
+});
+
+export default Calendar;

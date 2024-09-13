@@ -53,8 +53,6 @@ export async function getEmployeesByTeamOwnerId(teamOwnerId: string) {
     select: {
       id: true,
       email: true,
-      // Remove 'name' if it's not a field in your User model
-      // name: true,
       // Add any other fields you need
     },
   });

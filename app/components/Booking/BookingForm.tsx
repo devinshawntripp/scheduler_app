@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { ClientOnly } from '~/utils/clientOnly';
-import { Form, useActionData, useNavigation, useFetcher, Link } from '@remix-run/react';
+import { Form, useActionData, useNavigation, useFetcher, Link, useSubmit } from '@remix-run/react';
 import Calendar from '../Calendar/Calendar';
 import { ExtendedUser } from '~/types';
+import { format, parseISO } from 'date-fns';
+import { utcToZonedTime, zonedTimeToUtc } from 'date-fns-tz';
 
 interface BookingFormProps {
   teamOwnerId: string;
@@ -21,7 +23,6 @@ export default function BookingForm({ teamOwnerId }: BookingFormProps) {
 }
 
 function BookingFormContent({ teamOwnerId }: BookingFormProps) {
-  const [isClient, setIsClient] = useState(false);
   const [contractors, setContractors] = useState<ExtendedUser[]>([]);
   const [selectedContractor, setSelectedContractor] = useState('');
   const [customerFirstName, setCustomerFirstName] = useState('');
@@ -31,89 +32,68 @@ function BookingFormContent({ teamOwnerId }: BookingFormProps) {
   const [state, setState] = useState('');
   const [description, setDescription] = useState('');
   const [dateTime, setDateTime] = useState(new Date());
-  const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [startDateTime, setStartDateTime] = useState(new Date());
+  const [endDateTime, setEndDateTime] = useState(new Date(new Date().getTime() + 60 * 60 * 1000));
+  const [timeZone, setTimeZone] = useState(Intl.DateTimeFormat().resolvedOptions().timeZone);
 
   const actionData = useActionData<{ error?: string }>();
   const navigation = useNavigation();
   const fetcher = useFetcher<EmployeesResponse>();
+  const submit = useSubmit();
 
   useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  useEffect(() => {
-    if (teamOwnerId) {
-      console.log("Fetching contractors...");
+    if (teamOwnerId && fetcher.state === 'idle' && !fetcher.data) {
       fetcher.load(`/api/employees?teamOwnerId=${teamOwnerId}`);
     }
   }, [teamOwnerId]);
 
   useEffect(() => {
-    console.log("Fetcher state:", fetcher.state);
-    console.log("Fetcher data:", fetcher.data);
-
-    if (fetcher.state === "loading") {
-      console.log("Fetcher is loading...");
-    } else if (fetcher.state === "idle") {
+    if (fetcher.state === "idle" && fetcher.data) {
       setIsLoading(false);
-      if (fetcher.data) {
-        if (fetcher.data.employees) {
-          console.log("Employees data received:", fetcher.data.employees);
-          setContractors(fetcher.data.employees.map(employee => ({
-            ...employee,
-            createdAt: new Date(employee.createdAt),
-            updatedAt: new Date(employee.updatedAt)
-          })));
-        } else {
-          console.log("No employees data in the response");
-          setError("No employees data received");
-        }
-      } else if (fetcher.data === undefined) {
-        console.log("Fetcher data is undefined");
-        setError("Failed to fetch contractors");
+      if (fetcher.data.employees && Array.isArray(fetcher.data.employees)) {
+        setContractors(fetcher.data.employees);
+        setError(null);
+      } else {
+        setError("No employees data received");
       }
+    } else if (fetcher.state === "idle" && !fetcher.data) {
+      setIsLoading(false);
+      setError("Failed to fetch contractors");
     }
-  }, [fetcher.state, fetcher.data]);
+  }, [fetcher.data, fetcher.state]);
 
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {};
-    if (!selectedContractor) newErrors.contractor = 'Please select a contractor';
-    if (!customerFirstName.trim()) newErrors.customerFirstName = 'First name is required';
-    if (!customerLastName.trim()) newErrors.customerLastName = 'Last name is required';
-    if (!address.trim()) newErrors.address = 'Address is required';
-    if (!city.trim()) newErrors.city = 'City is required';
-    if (!state.trim()) newErrors.state = 'State is required';
-    if (!description.trim()) newErrors.description = 'Description is required';
-    if (!dateTime) newErrors.dateTime = 'Date and time are required';
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    formData.append('teamOwnerId', teamOwnerId);
+    submit(formData, { method: 'post', action: '/api/bookings' });
   };
 
-  const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault();
-    if (validateForm()) {
-      fetcher.submit(
-        {
-          contractorId: selectedContractor,
-          customerFirstName,
-          customerLastName,
-          address,
-          city,
-          state,
-          description,
-          dateTime: dateTime.toISOString(),
-        },
-        { method: "post", action: "/api/bookings" }
+  const memoizedCalendar = useMemo(() => {
+    if (selectedContractor) {
+      return (
+        <React.Suspense fallback={<div className="text-neon-blue">Loading calendar...</div>}>
+          <Calendar userId={selectedContractor} />
+        </React.Suspense>
       );
     }
+    return null;
+  }, [selectedContractor]);
+
+  const handleStartDateTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const localDate = parseISO(e.target.value);
+    const utcDate = zonedTimeToUtc(localDate, timeZone);
+    setStartDateTime(utcDate);
+    setEndDateTime(new Date(utcDate.getTime() + 60 * 60 * 1000));
   };
 
-  if (!isClient) {
-    return <div>Loading...</div>;
-  }
+  const handleEndDateTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const localDate = parseISO(e.target.value);
+    const utcDate = zonedTimeToUtc(localDate, timeZone);
+    setEndDateTime(utcDate);
+  };
 
   if (isLoading) {
     return (
@@ -239,12 +219,23 @@ function BookingFormContent({ teamOwnerId }: BookingFormProps) {
             />
           </div>
           <div className="mb-4">
-            <label htmlFor="dateTime" className="block text-neon-blue text-sm font-bold mb-2">Date and Time</label>
+            <label htmlFor="startDateTime" className="block text-neon-blue text-sm font-bold mb-2">Start Date and Time</label>
             <input
               type="datetime-local"
-              id="dateTime"
-              value={dateTime.toISOString().slice(0, 16)}
-              onChange={(e) => setDateTime(new Date(e.target.value))}
+              id="startDateTime"
+              value={format(utcToZonedTime(startDateTime, timeZone), "yyyy-MM-dd'T'HH:mm")}
+              onChange={handleStartDateTimeChange}
+              className="shadow appearance-none border rounded w-full py-2 px-3 bg-gray-800 text-neon-blue leading-tight focus:outline-none focus:shadow-outline focus:border-neon-green"
+              required
+            />
+          </div>
+          <div className="mb-4">
+            <label htmlFor="endDateTime" className="block text-neon-blue text-sm font-bold mb-2">End Date and Time</label>
+            <input
+              type="datetime-local"
+              id="endDateTime"
+              value={format(utcToZonedTime(endDateTime, timeZone), "yyyy-MM-dd'T'HH:mm")}
+              onChange={handleEndDateTimeChange}
               className="shadow appearance-none border rounded w-full py-2 px-3 bg-gray-800 text-neon-blue leading-tight focus:outline-none focus:shadow-outline focus:border-neon-green"
               required
             />
@@ -260,7 +251,7 @@ function BookingFormContent({ teamOwnerId }: BookingFormProps) {
           {selectedContractor && (
             <div className="mt-6">
               <h3 className="text-lg font-semibold mb-2 text-neon-green">Contractor's Calendar</h3>
-              <Calendar userId={selectedContractor} />
+              {memoizedCalendar}
             </div>
           )}
         </>
