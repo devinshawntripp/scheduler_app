@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { sendEmailNotification } from "../utils/email";
 import type { ExtendedBooking } from "../types";
+import { prisma } from "~/db.server";
 
 const prisma = new PrismaClient();
 
@@ -13,7 +14,8 @@ export async function createBooking(
   city: string,
   state: string,
   description: string,
-  dateTime: Date
+  startDateTime: Date,
+  endDateTime: Date
 ): Promise<ExtendedBooking> {
   const booking = await prisma.booking.create({
     data: {
@@ -25,7 +27,8 @@ export async function createBooking(
       city,
       state,
       description,
-      dateTime,
+      startDateTime,
+      endDateTime,
     },
   });
 
@@ -41,14 +44,14 @@ export async function getBookingsByTeamOwnerId(teamOwnerId: string): Promise<Ext
   return prisma.booking.findMany({
     where: { teamOwnerId },
     include: { contractor: true },
-    orderBy: { dateTime: 'asc' },
+    orderBy: { startDateTime: 'asc' },
   });
 }
 
 export async function getBookingsByContractorId(contractorId: string): Promise<ExtendedBooking[]> {
   return prisma.booking.findMany({
     where: { contractorId },
-    orderBy: { dateTime: 'asc' },
+    orderBy: { startDateTime: 'asc' },
   });
 }
 

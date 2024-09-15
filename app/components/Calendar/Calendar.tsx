@@ -4,6 +4,7 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import { useFetcher } from '@remix-run/react';
+import { APP_TIME_ZONE } from '~/config/app-config';
 
 interface CalendarProps {
   userId: string;
@@ -35,9 +36,10 @@ const Calendar: React.FC<CalendarProps> = React.memo(({ userId }) => {
     },
     slotDuration: '00:30:00',
     slotLabelInterval: '01:00',
-    slotMinTime: '08:00:00',
-    slotMaxTime: '20:00:00',
+    slotMinTime: '00:00:00',
+    slotMaxTime: '24:00:00',
     events: events,
+    timeZone: APP_TIME_ZONE,
     eventContent: (arg: any) => {
       return (
         <>

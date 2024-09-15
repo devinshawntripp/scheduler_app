@@ -4,7 +4,11 @@ export interface ExtendedUser extends User {
   hasUnreadInvitation: boolean;
 }
 
-export type ExtendedBooking = Booking;
+export interface ExtendedBooking extends Omit<Booking, 'startDateTime' | 'endDateTime'> {
+  startDateTime: Date;
+  endDateTime: Date;
+}
+
 export type ExtendedEvent = Event;
 
 // If you need to extend these types in the future, you can do:

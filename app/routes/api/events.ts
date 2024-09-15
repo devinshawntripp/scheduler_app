@@ -1,42 +1,35 @@
-import { json, LoaderFunction, ActionFunctionArgs } from "@remix-run/node";
-import { requireUserId } from "~/services/auth.server";
-import { createEvent, updateEvent, deleteEvent, getEventsByUserId } from "~/models/event.server";
-import { getUserById } from "~/models/user.server";
+import { json, LoaderFunction } from "@remix-run/node";
+import { requireUserId } from "~/utils/auth.server";
+import { getBookingsByContractorId } from "~/models/booking.server";
+import { formatInTimeZone } from 'date-fns-tz';
+import { APP_TIME_ZONE } from '~/config/app-config';
 
 export const loader: LoaderFunction = async ({ request }) => {
-  const userId = await requireUserId(request);
-  const events = await getEventsByUserId(userId);
-  return json({ events });
-};
-
-export async function action({ request }: ActionFunctionArgs) {
-  const userId = await requireUserId(request);
-  const user = await getUserById(userId);
-
-  if (!user) {
-    return json({ error: "User not found" }, { status: 404 });
-  }
-
-  const formData = await request.formData();
-  const title = formData.get("title") as string;
-  const start = new Date(formData.get("start") as string);
-  const end = new Date(formData.get("end") as string);
-  const description = formData.get("description") as string;
-
   try {
-    if (request.method === "POST") {
-      const event = await createEvent(userId, title, start, end, description);
-      return json({ event });
-    } else if (request.method === "PUT") {
-      const eventId = formData.get("eventId") as string;
-      const event = await updateEvent(eventId, { title, start, end, description });
-      return json({ event });
-    } else if (request.method === "DELETE") {
-      const eventId = formData.get("eventId") as string;
-      await deleteEvent(eventId);
-      return json({ success: true });
+    await requireUserId(request);
+    
+    const url = new URL(request.url);
+    const userId = url.searchParams.get("userId");
+
+    if (!userId) {
+      return json({ error: "userId is required" }, { status: 400 });
     }
+
+    const bookings = await getBookingsByContractorId(userId);
+    const events = bookings.map(booking => ({
+      id: booking.id,
+      title: `${booking.customerFirstName} ${booking.customerLastName}`,
+      start: formatInTimeZone(new Date(booking.startDateTime), APP_TIME_ZONE, "yyyy-MM-dd'T'HH:mm:ssXXX"),
+      end: formatInTimeZone(new Date(booking.endDateTime), APP_TIME_ZONE, "yyyy-MM-dd'T'HH:mm:ssXXX"),
+      description: booking.description,
+    }));
+
+    return json({ events });
   } catch (error) {
-    return json({ error: "Failed to process event" }, { status: 500 });
+    console.error("Error in events loader:", error);
+    if (error instanceof Response && error.status === 401) {
+      return json({ error: "Unauthorized" }, { status: 401 });
+    }
+    return json({ error: "Failed to fetch events" }, { status: 500 });
   }
-}
+};

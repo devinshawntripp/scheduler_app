@@ -1,47 +1,32 @@
-import { json, LoaderFunctionArgs, ActionFunctionArgs } from "@remix-run/node";
-import { requireUserId } from "~/services/auth.server";
-import { createBooking, getBookingsByTeamOwnerId, getBookingsByContractorId } from "~/models/booking.server";
-import { getUserById } from "~/models/user.server";
-import { detectConflicts } from "~/utils/conflictDetection";
-import type { ExtendedBooking } from "~/types";
-import { zonedTimeToUtc } from 'date-fns-tz';
+import { json, LoaderFunction, ActionFunction } from "@remix-run/node";
+import { requireUserId } from "~/utils/auth.server";
+import { createBooking } from "~/models/booking.server";
 
-export async function loader({ request }: LoaderFunctionArgs) {
-  const userId = await requireUserId(request);
-  const user = await getUserById(userId);
+export const loader: LoaderFunction = async ({ request }) => {
+  return json({ message: "Bookings API" });
+};
 
-  if (!user) {
-    return json({ error: "User not found" }, { status: 404 });
-  }
-
-  if (user.role === "team_owner") {
-    const bookings = await getBookingsByTeamOwnerId(userId);
-    return json({ bookings });
-  } else if (user.role === "employee" || user.role === "contractor") {
-    const bookings = await getBookingsByContractorId(userId);
-    return json({ bookings });
-  } else {
-    return json({ error: "Unauthorized" }, { status: 403 });
-  }
-}
-
-export async function action({ request }: ActionFunctionArgs) {
+export const action: ActionFunction = async ({ request }) => {
   const userId = await requireUserId(request);
   const formData = await request.formData();
 
   const teamOwnerId = formData.get("teamOwnerId") as string;
-  const contractorId = formData.get("contractor") as string;
+  const contractorId = formData.get("contractorId") as string;
   const customerFirstName = formData.get("customerFirstName") as string;
   const customerLastName = formData.get("customerLastName") as string;
   const address = formData.get("address") as string;
   const city = formData.get("city") as string;
   const state = formData.get("state") as string;
   const description = formData.get("description") as string;
-  const startDateTime = zonedTimeToUtc(new Date(formData.get("startDateTime") as string), 'UTC');
-  const endDateTime = zonedTimeToUtc(new Date(formData.get("endDateTime") as string), 'UTC');
+  const startDateTime = new Date(formData.get("startDateTime") as string);
+  const endDateTime = new Date(formData.get("endDateTime") as string);
+
+  if (isNaN(startDateTime.getTime()) || isNaN(endDateTime.getTime())) {
+    return json({ error: "Invalid date format" }, { status: 400 });
+  }
 
   try {
-    const booking = await createBooking({
+    const booking = await createBooking(
       teamOwnerId,
       contractorId,
       customerFirstName,
@@ -51,12 +36,12 @@ export async function action({ request }: ActionFunctionArgs) {
       state,
       description,
       startDateTime,
-      endDateTime,
-    });
+      endDateTime
+    );
 
     return json({ success: true, booking });
   } catch (error) {
     console.error("Error creating booking:", error);
     return json({ error: "Failed to create booking" }, { status: 500 });
   }
-}
+};

@@ -8,6 +8,8 @@ const transporter = nodemailer.createTransport({
     user: process.env.SMTP_USER || '',
     pass: process.env.SMTP_PASS || '',
   },
+  secure: false,
+  ignoreTLS: true,
 });
 
 export async function sendEmailNotification(email: string, booking: ExtendedBooking): Promise<void> {
@@ -18,9 +20,16 @@ export async function sendEmailNotification(email: string, booking: ExtendedBook
     text: `You have a new booking:
     Customer: ${booking.customerFirstName} ${booking.customerLastName}
     Address: ${booking.address}, ${booking.city}, ${booking.state}
-    Date/Time: ${booking.dateTime}
+    Start Date/Time: ${booking.startDateTime}
+    End Date/Time: ${booking.endDateTime}
     Description: ${booking.description}`,
   };
 
-  await transporter.sendMail(mailOptions);
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log('Email sent successfully');
+  } catch (error) {
+    console.error('Error sending email:', error);
+    throw error;
+  }
 }

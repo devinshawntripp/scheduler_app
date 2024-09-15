@@ -4,10 +4,10 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
-  useRouteError,
-  isRouteErrorResponse
+  useLoaderData,
 } from "@remix-run/react";
-import type { LinksFunction } from "@remix-run/node";
+import type { LinksFunction, LoaderFunction } from "@remix-run/node";
+import { json } from "@remix-run/node";
 
 // Import the CSS file
 // import styles from "./tailwind.css";
@@ -16,7 +16,17 @@ export const links: LinksFunction = () => [
   { rel: "stylesheet", href: "/tailwind.css" },
 ];
 
+export const loader: LoaderFunction = async () => {
+  return json({
+    ENV: {
+      APP_TIME_ZONE: process.env.APP_TIME_ZONE || 'America/Chicago',
+    },
+  });
+};
+
 export default function App() {
+  const data = useLoaderData<typeof loader>();
+
   return (
     <html lang="en" className="h-full dark">
       <head>
@@ -29,41 +39,11 @@ export default function App() {
         <Outlet />
         <ScrollRestoration />
         <Scripts />
-      </body>
-    </html>
-  );
-}
-
-export function ErrorBoundary() {
-  const error = useRouteError();
-
-  return (
-    <html lang="en" className="h-full dark">
-      <head>
-        <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width,initial-scale=1" />
-        <Meta />
-        <Links />
-      </head>
-      <body className="h-full bg-gray-900 text-white">
-        {isRouteErrorResponse(error) ? (
-          <div>
-            <h1>
-              {error.status} {error.statusText}
-            </h1>
-            <p>{error.data}</p>
-          </div>
-        ) : error instanceof Error ? (
-          <div>
-            <h1>Error</h1>
-            <p>{error.message}</p>
-            <p>The stack trace is:</p>
-            <pre>{error.stack}</pre>
-          </div>
-        ) : (
-          <h1>Unknown Error</h1>
-        )}
-        <Scripts />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.ENV = ${JSON.stringify(data.ENV)}`,
+          }}
+        />
       </body>
     </html>
   );

@@ -2,6 +2,8 @@ import React from 'react';
 import { Link } from '@remix-run/react';
 import BookingForm from '../Booking/BookingForm';
 import type { ExtendedBooking } from '~/types';
+import { formatInTimeZone } from 'date-fns-tz';
+import { APP_TIME_ZONE } from '~/config/app-config';
 
 interface TeamOwnerDashboardProps {
   userId: string;
@@ -29,7 +31,7 @@ export default function TeamOwnerDashboard({ userId, bookings }: TeamOwnerDashbo
                         {booking.customerFirstName} {booking.customerLastName}
                       </p>
                       <p className="text-sm text-gray-500">
-                        {new Date(booking.dateTime).toLocaleString()}
+                        {formatInTimeZone(new Date(booking.startDateTime), APP_TIME_ZONE, 'PPpp')} - {formatInTimeZone(new Date(booking.endDateTime), APP_TIME_ZONE, 'p')}
                       </p>
                     </div>
                     <div>

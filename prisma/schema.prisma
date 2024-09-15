@@ -46,7 +46,8 @@ model Booking {
   city              String
   state             String
   description       String
-  dateTime          DateTime
+  startDateTime     DateTime
+  endDateTime       DateTime
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
   teamOwner         User     @relation("TeamOwnerBookings", fields: [teamOwnerId], references: [id])
