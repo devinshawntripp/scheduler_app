@@ -12,7 +12,7 @@ RUN npm ci
 
 # Copy prisma schema
 COPY prisma ./prisma/
-
+ENV DATABASE_URL=postgresql://postgres:postgres@db:5432/scheduler
 # Generate Prisma client
 RUN npx prisma generate
 
