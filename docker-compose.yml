@@ -4,7 +4,7 @@ services:
   app:
     build: .
     ports:
-      - "3000:3000"
+      - "3001:3000"  # Changed from "3000:3000"
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/scheduler
       - SESSION_SECRET=${SESSION_SECRET}
@@ -13,7 +13,7 @@ services:
       - SMTP_USER=
       - SMTP_PASS=
       - SMTP_FROM=noreply@scheduler.com
-      - APP_URL=http://localhost:3000
+      - APP_URL=http://localhost:3001  # Changed from http://localhost:3000
     depends_on:
       - db
       - mailhog
