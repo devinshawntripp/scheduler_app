@@ -8,15 +8,14 @@ services:
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/scheduler
       - SESSION_SECRET=${SESSION_SECRET}
-      - SMTP_HOST=mailhog
-      - SMTP_PORT=1025
-      - SMTP_USER=
-      - SMTP_PASS=
-      - SMTP_FROM=noreply@scheduler.com
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
+      - SMTP_FROM=${SMTP_FROM}
       - APP_URL=http://localhost:3000
     depends_on:
       - db
-      - mailhog
 
   db:
     image: postgres:13
@@ -26,11 +25,6 @@ services:
       - POSTGRES_DB=scheduler
     volumes:
       - postgres_data:/var/lib/postgresql/data
-
-  mailhog:
-    image: mailhog/mailhog
-    ports:
-      - "8025:8025"
 
 volumes:
   postgres_data:
