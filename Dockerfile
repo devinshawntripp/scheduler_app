@@ -26,10 +26,10 @@ RUN npm run build
 
 # Ensure Unix-style line endings (in case the file was created on Windows)
 # RUN sed -i 's/\r$//' ./entrypoint.sh
-COPY entrypoint.sh /entrypoint.sh
+# COPY entrypoint.sh /entrypoint.sh
 
 # Make the entrypoint script executable
-RUN chmod +x /entrypoint.sh
+RUN chmod +x ./entrypoint.sh
 
 # Expose the port the app runs on
 EXPOSE 3001
