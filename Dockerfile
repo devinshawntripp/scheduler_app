@@ -1,6 +1,9 @@
 # Use an official Node runtime as the base image
 FROM node:20-alpine
 
+# Install netcat-openbsd for 'nc' command (required for 'nc' in entrypoint.sh)
+RUN apk add --no-cache netcat-openbsd
+
 # Set the working directory in the container
 WORKDIR /app
 
@@ -10,16 +13,17 @@ COPY package*.json ./
 # Install dependencies
 RUN npm ci
 
-RUN apk add --no-cache netcat-openbsd
-
 # Copy the rest of the application code
 COPY . .
 
 # Build the application
 RUN npm run build
 
-# Copy the entrypoint script
+# Copy the entrypoint script after copying the rest of the code
 COPY entrypoint.sh ./
+
+# Ensure Unix-style line endings (in case the file was created on Windows)
+RUN sed -i 's/\r$//' ./entrypoint.sh
 
 # Make the entrypoint script executable
 RUN chmod +x ./entrypoint.sh
@@ -27,7 +31,5 @@ RUN chmod +x ./entrypoint.sh
 # Expose the port the app runs on
 EXPOSE 3001
 
+# Set the entrypoint
 ENTRYPOINT ["./entrypoint.sh"]
-
-# Start the application
-# CMD ["npm", "start"]
