@@ -27,5 +27,7 @@ RUN chmod +x ./entrypoint.sh
 # Expose the port the app runs on
 EXPOSE 3001
 
+ENTRYPOINT ["./entrypoint.sh"]
+
 # Start the application
-CMD ["./entrypoint.sh"]
+CMD ["npm", "start"]
