@@ -19,10 +19,10 @@ COPY . .
 RUN npm run build
 
 # Copy the entrypoint script
-COPY entrypoint.sh ./
+COPY entrypoint.sh .
 
 # Make the entrypoint script executable
-RUN chmod +x ./entrypoint.sh
+RUN chmod +x .entrypoint.sh
 
 # Expose the port the app runs on
 EXPOSE 3001
