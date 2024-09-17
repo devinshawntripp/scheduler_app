@@ -16,14 +16,16 @@ RUN npm ci
 # Copy the rest of the application code
 COPY . .
 
+RUN ls -la
+
 # Build the application
 RUN npm run build
 
 # Copy the entrypoint script after copying the rest of the code
-COPY entrypoint.sh ./
+# COPY entrypoint.sh ./
 
 # Ensure Unix-style line endings (in case the file was created on Windows)
-RUN sed -i 's/\r$//' ./entrypoint.sh
+# RUN sed -i 's/\r$//' ./entrypoint.sh
 
 # Make the entrypoint script executable
 RUN chmod +x ./entrypoint.sh
@@ -32,4 +34,4 @@ RUN chmod +x ./entrypoint.sh
 EXPOSE 3001
 
 # Set the entrypoint
-ENTRYPOINT ["/app/entrypoint.sh"]
+ENTRYPOINT ["./entrypoint.sh"]
