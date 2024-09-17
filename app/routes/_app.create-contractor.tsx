@@ -1,7 +1,10 @@
 import { json, redirect, type ActionFunction } from "@remix-run/node";
 import { Form, useActionData, useNavigation } from "@remix-run/react";
 import { createUser } from "~/models/user.server";
+import { inviteContractor } from "~/models/invite.server";
 import { requireUserId } from "~/utils/auth.server";
+import { useState } from "react";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 export const action: ActionFunction = async ({ request }) => {
   console.log("Create contractor action started");
@@ -24,16 +27,9 @@ export const action: ActionFunction = async ({ request }) => {
     const user = await createUser(email, password, "contractor");
     console.log("Contractor created:", user);
 
-    // Send invitation
-    const inviteResponse = await fetch("/api/invite-contractor", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({ email }),
-    });
-
-    if (!inviteResponse.ok) {
-      throw new Error("Failed to send invitation");
-    }
+    // Invite the new contractor
+    await inviteContractor(userId, email);
+    console.log("Invitation sent to:", email);
 
     return redirect("/dashboard");
   } catch (error) {
@@ -48,20 +44,24 @@ export const action: ActionFunction = async ({ request }) => {
 export default function CreateContractor() {
   const actionData = useActionData<{ error?: string }>();
   const navigation = useNavigation();
+  const [showPassword, setShowPassword] = useState(false);
+  const [contractorEmail, setContractorEmail] = useState("");
+  const [contractorPassword, setContractorPassword] = useState("");
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+        <h2 className="mt-6 text-center text-3xl font-extrabold text-white">
           Create a new contractor
         </h2>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+        <div className="bg-gray-800 py-8 px-4 shadow sm:rounded-lg sm:px-10">
           <Form method="post" className="space-y-6">
+            {/* Email Field */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-300">
                 Email address
               </label>
               <div className="mt-1">
@@ -69,29 +69,48 @@ export default function CreateContractor() {
                   id="email"
                   name="email"
                   type="email"
+                  onChange={(e) => setContractorEmail(e.target.value)}
+                  value={contractorEmail}
                   autoComplete="email"
                   required
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  className="appearance-none block w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 bg-gray-700 text-black focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 />
               </div>
             </div>
 
+            {/* Password Field */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-300">
                 Password
               </label>
-              <div className="mt-1">
+              <div className="mt-1 relative">
                 <input
                   id="password"
                   name="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   autoComplete="current-password"
+                  onChange={(e) => setContractorPassword(e.target.value)}
+                  value={contractorPassword}
                   required
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  className="appearance-none block w-full px-3 py-2 pr-12 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 bg-gray-700 text-black focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 />
+                <div className="absolute right-0 top-0 mt-2 mr-2">
+                  <button
+                    type="button"
+                    className="text-gray-400 hover:text-gray-300 focus:outline-none"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <FaEyeSlash className="h-5 w-5" />
+                    ) : (
+                      <FaEye className="h-5 w-5" />
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
 
+            {/* Submit Button */}
             <div>
               <button
                 type="submit"
@@ -104,7 +123,7 @@ export default function CreateContractor() {
           </Form>
 
           {actionData?.error && (
-            <div className="mt-4 text-red-600 text-center">{actionData.error}</div>
+            <div className="mt-4 text-red-400 text-center">{actionData.error}</div>
           )}
         </div>
       </div>

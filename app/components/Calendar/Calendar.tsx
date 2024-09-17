@@ -8,23 +8,32 @@ import { APP_TIME_ZONE } from '~/config/app-config';
 
 interface CalendarProps {
   userId: string;
+  events?: Array<{
+    id: string;
+    title: string;
+    start: string;
+    end: string;
+    userId: string;
+  }>;
 }
 
-const Calendar: React.FC<CalendarProps> = React.memo(({ userId }) => {
+const Calendar: React.FC<CalendarProps> = React.memo(({ userId, events: propEvents }) => {
   const fetcher = useFetcher();
-  const [events, setEvents] = useState([]);
+  const [events, setEvents] = useState(propEvents || []);
 
   useEffect(() => {
-    if (userId && fetcher.state === 'idle' && !fetcher.data) {
+    if (propEvents) {
+      setEvents(propEvents);
+    } else if (userId && fetcher.state === 'idle' && !fetcher.data) {
       fetcher.load(`/api/events?userId=${userId}`);
     }
-  }, [userId]);
+  }, [userId, propEvents]);
 
   useEffect(() => {
-    if (fetcher.data && fetcher.data.events) {
+    if (!propEvents && fetcher.data && fetcher.data.events) {
       setEvents(fetcher.data.events);
     }
-  }, [fetcher.data]);
+  }, [fetcher.data, propEvents]);
 
   const calendarOptions = useMemo(() => ({
     plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
@@ -53,7 +62,6 @@ const Calendar: React.FC<CalendarProps> = React.memo(({ userId }) => {
   if (fetcher.state === "loading") {
     return <div className="text-neon-blue">Loading events...</div>;
   }
-
   return (
     <div className="calendar-container">
       <FullCalendar {...calendarOptions} />
@@ -62,3 +70,4 @@ const Calendar: React.FC<CalendarProps> = React.memo(({ userId }) => {
 });
 
 export default Calendar;
+

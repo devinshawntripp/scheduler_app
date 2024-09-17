@@ -135,11 +135,38 @@ function BookingFormContent({ teamOwnerId }: BookingFormProps) {
     }
   };
 
+  // const handleCreateContractor = async (event: React.FormEvent<HTMLFormElement>) => {
+  //   event.preventDefault();
+  //   const formData = new FormData(event.currentTarget);
+    
+  //   try {
+  //     const response = await fetch('/api/create-contractor', {
+  //       method: 'POST',
+  //       body: formData,
+  //     });
+
+  //     if (!response.ok) {
+  //       throw new Error('Failed to create contractor');
+  //     }
+
+  //     const result = await response.json();
+  //     if (result.success) {
+  //       // Refresh the contractors list or add the new contractor to the existing list
+  //       setContractors([...contractors, result.contractor]);
+  //       // Clear the form or close the modal if you're using one
+  //     } else {
+  //       setError(result.error || 'Failed to create contractor');
+  //     }
+  //   } catch (error) {
+  //     setError('An error occurred while creating the contractor');
+  //   }
+  // };
+
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-neon-green"></div>
-        <p className="mt-4 text-lg font-semibold text-neon-blue">
+        <div className="loading loading-spinner loading-lg"></div>
+        <p className="mt-4 text-lg font-semibold">
           Loading contractors...
         </p>
       </div>
@@ -149,14 +176,16 @@ function BookingFormContent({ teamOwnerId }: BookingFormProps) {
   if (error) {
     return (
       <div className="text-center py-4">
-        <p className="text-neon-red text-lg font-semibold mb-4">Error: {error}</p>
+        <div className="alert alert-error mb-4">
+          <span>Error: {error}</span>
+        </div>
         <button
           onClick={() => {
             setIsLoading(true);
             setError(null);
             fetcher.load(`/api/employees?teamOwnerId=${teamOwnerId}`);
           }}
-          className="bg-neon-green text-black px-4 py-2 rounded hover:bg-neon-blue transition duration-300"
+          className="btn btn-primary"
         >
           Retry
         </button>
@@ -168,31 +197,28 @@ function BookingFormContent({ teamOwnerId }: BookingFormProps) {
     <Form method="post" onSubmit={handleSubmit} className="space-y-4">
       {contractors.length === 0 ? (
         <div className="text-center py-4">
-          <p className="mb-4 text-neon-blue">
+          <p className="mb-4">
             No contractors found. Would you like to create one?
           </p>
           <Link
             to="/create-contractor"
-            className="bg-neon-green text-black px-4 py-2 rounded hover:bg-neon-blue transition duration-300"
+            className="btn btn-primary"
           >
             Create Contractor
           </Link>
         </div>
       ) : (
         <>
-          <div className="mb-4">
-            <label
-              htmlFor="contractor"
-              className="block text-neon-blue text-sm font-bold mb-2"
-            >
-              Contractor
+          <div className="form-control">
+            <label htmlFor="contractor" className="label">
+              <span className="label-text">Contractor</span>
             </label>
             <select
               id="contractor"
               name="contractorId"
               value={selectedContractor}
               onChange={(e) => setSelectedContractor(e.target.value)}
-              className="shadow appearance-none border rounded w-full py-2 px-3 bg-gray-800 text-neon-blue leading-tight focus:outline-none focus:shadow-outline focus:border-neon-green"
+              className="select select-bordered w-full"
               required
             >
               <option value="">Select a contractor</option>
@@ -203,12 +229,9 @@ function BookingFormContent({ teamOwnerId }: BookingFormProps) {
               ))}
             </select>
           </div>
-          <div className="mb-4">
-            <label
-              htmlFor="customerFirstName"
-              className="block text-neon-blue text-sm font-bold mb-2"
-            >
-              Customer First Name
+          <div className="form-control">
+            <label htmlFor="customerFirstName" className="label">
+              <span className="label-text">Customer First Name</span>
             </label>
             <input
               type="text"
@@ -216,16 +239,13 @@ function BookingFormContent({ teamOwnerId }: BookingFormProps) {
               name="customerFirstName"
               value={customerFirstName}
               onChange={(e) => setCustomerFirstName(e.target.value)}
-              className="shadow appearance-none border rounded w-full py-2 px-3 bg-gray-800 text-neon-blue leading-tight focus:outline-none focus:shadow-outline focus:border-neon-green"
+              className="input input-bordered w-full"
               required
             />
           </div>
-          <div className="mb-4">
-            <label
-              htmlFor="customerLastName"
-              className="block text-neon-blue text-sm font-bold mb-2"
-            >
-              Customer Last Name
+          <div className="form-control">
+            <label htmlFor="customerLastName" className="label">
+              <span className="label-text">Customer Last Name</span>
             </label>
             <input
               type="text"
@@ -233,16 +253,13 @@ function BookingFormContent({ teamOwnerId }: BookingFormProps) {
               name="customerLastName"
               value={customerLastName}
               onChange={(e) => setCustomerLastName(e.target.value)}
-              className="shadow appearance-none border rounded w-full py-2 px-3 bg-gray-800 text-neon-blue leading-tight focus:outline-none focus:shadow-outline focus:border-neon-green"
+              className="input input-bordered w-full"
               required
             />
           </div>
-          <div className="mb-4">
-            <label
-              htmlFor="address"
-              className="block text-neon-blue text-sm font-bold mb-2"
-            >
-              Address
+          <div className="form-control">
+            <label htmlFor="address" className="label">
+              <span className="label-text">Address</span>
             </label>
             <input
               type="text"
@@ -250,16 +267,13 @@ function BookingFormContent({ teamOwnerId }: BookingFormProps) {
               name="address"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              className="shadow appearance-none border rounded w-full py-2 px-3 bg-gray-800 text-neon-blue leading-tight focus:outline-none focus:shadow-outline focus:border-neon-green"
+              className="input input-bordered w-full"
               required
             />
           </div>
-          <div className="mb-4">
-            <label
-              htmlFor="city"
-              className="block text-neon-blue text-sm font-bold mb-2"
-            >
-              City
+          <div className="form-control">
+            <label htmlFor="city" className="label">
+              <span className="label-text">City</span>
             </label>
             <input
               type="text"
@@ -267,16 +281,13 @@ function BookingFormContent({ teamOwnerId }: BookingFormProps) {
               name="city"
               value={city}
               onChange={(e) => setCity(e.target.value)}
-              className="shadow appearance-none border rounded w-full py-2 px-3 bg-gray-800 text-neon-blue leading-tight focus:outline-none focus:shadow-outline focus:border-neon-green"
+              className="input input-bordered w-full"
               required
             />
           </div>
-          <div className="mb-4">
-            <label
-              htmlFor="state"
-              className="block text-neon-blue text-sm font-bold mb-2"
-            >
-              State
+          <div className="form-control">
+            <label htmlFor="state" className="label">
+              <span className="label-text">State</span>
             </label>
             <input
               type="text"
@@ -284,32 +295,26 @@ function BookingFormContent({ teamOwnerId }: BookingFormProps) {
               name="state"
               value={state}
               onChange={(e) => setState(e.target.value)}
-              className="shadow appearance-none border rounded w-full py-2 px-3 bg-gray-800 text-neon-blue leading-tight focus:outline-none focus:shadow-outline focus:border-neon-green"
+              className="input input-bordered w-full"
               required
             />
           </div>
-          <div className="mb-4">
-            <label
-              htmlFor="description"
-              className="block text-neon-blue text-sm font-bold mb-2"
-            >
-              Description
+          <div className="form-control">
+            <label htmlFor="description" className="label">
+              <span className="label-text">Description</span>
             </label>
             <textarea
               id="description"
               name="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="shadow appearance-none border rounded w-full py-2 px-3 bg-gray-800 text-neon-blue leading-tight focus:outline-none focus:shadow-outline focus:border-neon-green"
+              className="textarea textarea-bordered w-full"
               required
             />
           </div>
-          <div className="mb-4">
-            <label
-              htmlFor="startDateTime"
-              className="block text-neon-blue text-sm font-bold mb-2"
-            >
-              Start Date and Time
+          <div className="form-control">
+            <label htmlFor="startDateTime" className="label">
+              <span className="label-text">Start Date and Time</span>
             </label>
             <input
               type="datetime-local"
@@ -317,16 +322,13 @@ function BookingFormContent({ teamOwnerId }: BookingFormProps) {
               name="startDateTime"
               value={format(startDateTime, "yyyy-MM-dd'T'HH:mm")}
               onChange={handleStartDateTimeChange}
-              className="shadow appearance-none border rounded w-full py-2 px-3 bg-gray-800 text-neon-blue leading-tight focus:outline-none focus:shadow-outline focus:border-neon-green"
+              className="input input-bordered w-full"
               required
             />
           </div>
-          <div className="mb-4">
-            <label
-              htmlFor="endDateTime"
-              className="block text-neon-blue text-sm font-bold mb-2"
-            >
-              End Date and Time
+          <div className="form-control">
+            <label htmlFor="endDateTime" className="label">
+              <span className="label-text">End Date and Time</span>
             </label>
             <input
               type="datetime-local"
@@ -334,32 +336,32 @@ function BookingFormContent({ teamOwnerId }: BookingFormProps) {
               name="endDateTime"
               value={format(endDateTime, "yyyy-MM-dd'T'HH:mm")}
               onChange={handleEndDateTimeChange}
-              className="shadow appearance-none border rounded w-full py-2 px-3 bg-gray-800 text-neon-blue leading-tight focus:outline-none focus:shadow-outline focus:border-neon-green"
+              className="input input-bordered w-full"
               required
             />
           </div>
           <button
             type="submit"
             disabled={submissionStatus === 'loading'}
-            className="bg-neon-green text-black font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline hover:bg-neon-blue transition duration-300"
+            className={`btn btn-primary w-full ${submissionStatus === 'loading' ? 'loading' : ''}`}
           >
             {submissionStatus === 'loading' ? 'Booking...' : 'Book Appointment'}
           </button>
           
           {submissionStatus === 'success' && (
-            <p className="text-neon-green mt-2">{submissionMessage}</p>
+            <div className="alert alert-success mt-2">{submissionMessage}</div>
           )}
           {submissionStatus === 'error' && (
-            <p className="text-neon-red mt-2">{submissionMessage}</p>
+            <div className="alert alert-error mt-2">{submissionMessage}</div>
           )}
           
           {selectedContractor && (
             <div className="mt-6">
-              <h3 className="text-lg font-semibold mb-2 text-neon-green">
+              <h3 className="text-lg font-semibold mb-2">
                 Contractor's Calendar
               </h3>
               <React.Suspense
-                fallback={<div className="text-neon-blue">Loading calendar...</div>}
+                fallback={<div className="loading loading-spinner loading-lg"></div>}
               >
                 <Calendar userId={selectedContractor} />
               </React.Suspense>

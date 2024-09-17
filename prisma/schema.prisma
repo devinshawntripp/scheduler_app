@@ -11,7 +11,7 @@ model User {
   id                  String    @id @default(uuid())
   email               String    @unique
   password            String
-  role                String
+  roles               UserRole[]
   teamOwnerId         String?
   teamOwner           User?     @relation("TeamMembers", fields: [teamOwnerId], references: [id])
   teamMembers         User[]    @relation("TeamMembers")
@@ -24,6 +24,12 @@ model User {
   events              Event[]
   sentInvitations     Invitation[]
   hasUnreadInvitation Boolean   @default(false)
+}
+
+model UserRole {
+  id     String @id @default(uuid())
+  name   String @unique
+  users  User[]
 }
 
 model Invitation {

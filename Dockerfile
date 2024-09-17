@@ -10,12 +10,9 @@ COPY package*.json ./
 # Install dependencies
 RUN npm ci
 
-# Install 'netcat-openbsd' for the 'nc' command used in the entrypoint script
-RUN apk add --no-cache netcat-openbsd
-
 # Copy prisma schema
 COPY prisma ./prisma/
-ENV DATABASE_URL=postgresql://postgres:postgres@db:5432/scheduler
+
 # Generate Prisma client
 RUN npx prisma generate
 
@@ -25,18 +22,8 @@ COPY . .
 # Build the application
 RUN npm run build
 
-#ENV PORT=3001
-# Copy the entrypoint script
-COPY entrypoint.sh ./
-
-# Make the entrypoint script executable
-RUN chmod +x ./entrypoint.sh
-
 # Expose the port the app runs on
-EXPOSE 3001
-
-# Set the entrypoint
-ENTRYPOINT ["./entrypoint.sh"]
+EXPOSE 3000
 
 # Start the application
-#CMD ["npm", "start"]
+CMD ["npm", "start"]

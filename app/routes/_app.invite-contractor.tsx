@@ -56,35 +56,46 @@ export const action: ActionFunction = async ({ request }) => {
 export default function InviteContractor() {
   const actionData = useActionData<typeof action>();
 
-  return (
-    <div className="max-w-md mx-auto mt-8">
-      <h2 className="text-2xl font-bold mb-4">Invite Contractor</h2>
-      <Form method="post">
-        <div className="mb-4">
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-            Contractor's Email
-          </label>
-          <input
-            type="email"
-            name="email"
-            id="email"
-            required
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-          />
-        </div>
-        <button
-          type="submit"
-          className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-        >
-          Send Invitation
-        </button>
-      </Form>
-      {actionData?.error && (
-        <p className="mt-2 text-red-600">{actionData.error}</p>
-      )}
-      {actionData?.success && (
-        <p className="mt-2 text-green-600">Invitation sent successfully!</p>
-      )}
-    </div>
-  );
+	return (
+		<div className="bg-base-200 min-h-screen p-6">
+			<div className="max-w-md mx-auto">
+				<h1 className="text-3xl font-bold text-primary mb-6">Invite Contractor</h1>
+				
+				<div className="card bg-base-100 shadow-xl">
+					<div className="card-body">
+						<Form method="post" className="space-y-4">
+							<div className="form-control">
+								<label className="label" htmlFor="email">
+									<span className="label-text">Contractor's Email</span>
+								</label>
+								<input
+									type="email"
+									id="email"
+									name="email"
+									className="input input-bordered w-full"
+									required
+								/>
+							</div>
+							
+							<button type="submit" className="btn btn-primary w-full">
+								Send Invitation
+							</button>
+						</Form>
+						
+						{actionData?.success && (
+							<div className="alert alert-success mt-4">
+								Invitation sent successfully!
+							</div>
+						)}
+						
+						{actionData?.error && (
+							<div className="alert alert-error mt-4">
+								{actionData.error}
+							</div>
+						)}
+					</div>
+				</div>
+			</div>
+		</div>
+	);
 }

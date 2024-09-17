@@ -10,7 +10,8 @@ export default defineConfig({
         return defineRoutes((route) => {
           route("/api/employees", "routes/api/employees.ts");
           route("/api/events", "routes/api/events.ts");
-          route("/api/bookings", "routes/api/bookings.ts"); // Add this line
+          route("/api/bookings", "routes/api/bookings.ts");
+          route("/api/create-contractor", "routes/api/create-contractor.ts"); // Add this line
         });
       },
     }),

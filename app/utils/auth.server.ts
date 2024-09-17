@@ -1,7 +1,7 @@
 import { createCookieSessionStorage, redirect } from "@remix-run/node";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { getUserByEmail, createUser as createUserInDB, getUserById } from "~/models/user.server";
+import { getUserByEmail, createUser as createUserInDB, getUserById, getUserRoles } from "~/models/user.server";
 import type { UserRole } from "../models/user.server";
 import { getSession } from "~/utils/session.server"; // Update this import path
 
@@ -12,6 +12,7 @@ type LoginForm = {
 
 export async function login({email, password} : LoginForm) {
   const user = await getUserByEmail(email);
+  console.log("found User:", user);
   if (!user || !await bcrypt.compare(password, user.password)) {
     return null;
   }
@@ -92,4 +93,17 @@ export async function logout(request: Request) {
       "Set-Cookie": await storage.destroySession(session),
     },
   });
+}
+
+export async function requireRole(request: Request, ...roles: string[]) {
+  const userId = await requireUserId(request);
+  const userRoles = await getUserRoles(userId);
+  
+  const hasRequiredRole = roles.some(role => userRoles.some(userRole => userRole.name === role));
+  
+  if (!hasRequiredRole) {
+    throw new Response("Unauthorized", { status: 403 });
+  }
+  
+  return userId;
 }

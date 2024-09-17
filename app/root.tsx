@@ -9,8 +9,6 @@ import {
 import type { LinksFunction, LoaderFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 
-// Import the CSS file
-// import styles from "./tailwind.css";
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: "/tailwind.css" },
