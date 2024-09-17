@@ -35,4 +35,4 @@ RUN chmod +x /entrypoint.sh
 EXPOSE 3001
 
 # Set the entrypoint
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["./entrypoint"]
