@@ -194,3 +194,10 @@ export async function removeUser(userId: string) {
     where: { id: userId }
   });
 }
+
+export async function updateUser(userId: string, data: Partial<User>) {
+  return prisma.user.update({
+    where: { id: userId },
+    data
+  });
+} 
