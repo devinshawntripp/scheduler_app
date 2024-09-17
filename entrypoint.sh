@@ -1,18 +1,16 @@
-#!/bin/sh
+#!/bin/bash
 
 # Wait for the database to be ready
-echo "Waiting for the database to be ready..."
-until nc -z -v -w30 db 5432
-do
-  echo "Waiting for database connection..."
-  sleep 1
-done
-echo "Database is up and running!"
+./wait-for-it.sh db:5432 -t 60
 
-# Run database migrations
-echo "Running database migrations..."
-npx prisma db push
+# Reset the database (this will drop all tables and recreate them)
+npx prisma db push --force-reset
+
+# Run migrations
+npx prisma migrate deploy
+
+# Generate Prisma client
+npx prisma generate
 
 # Start the application
-echo "Starting the application..."
-npm start
+npm run start
