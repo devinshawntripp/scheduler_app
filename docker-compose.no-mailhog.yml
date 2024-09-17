@@ -16,7 +16,8 @@ services:
       - SMTP_FROM=${SMTP_FROM}
       - APP_URL=http://localhost:3001
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
   db:
     image: postgres:13

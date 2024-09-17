@@ -19,7 +19,7 @@ COPY . .
 RUN npm run build
 
 # Copy the entrypoint script
-COPY entrypoint.sh .
+COPY entrypoint.sh ./
 
 # Make the entrypoint script executable
 RUN chmod +x ./entrypoint.sh
@@ -30,4 +30,4 @@ EXPOSE 3001
 ENTRYPOINT ["./entrypoint.sh"]
 
 # Start the application
-CMD ["npm", "start"]
+# CMD ["npm", "start"]
