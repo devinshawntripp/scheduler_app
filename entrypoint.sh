@@ -12,5 +12,8 @@ npx prisma migrate deploy
 # Generate Prisma client
 npx prisma generate
 
+# Run seed script
+npm run db:seed
+
 # Start the application
 npm run start
