@@ -6,7 +6,7 @@ import { getAllUsers, addRoleToUser, removeRoleFromUser, getAllRoles, addNewRole
 export const loader: LoaderFunction = async ({ request }) => {
   await requireRole(request, 'admin');
   const users = await getAllUsers();
-  const roles = await getAllRoles();
+  const roles = await getAllRoles(true); // Pass true to get all roles, including admin
   return json({ users, roles });
 };
 

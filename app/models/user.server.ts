@@ -184,8 +184,18 @@ export async function removeRole(roleName: string) {
   return prisma.userRole.delete({ where: { name: roleName } });
 }
 
-export async function getAllRoles() {
-  return prisma.userRole.findMany();
+export async function getAllRoles(isAdmin: boolean) {
+  if (isAdmin) {
+    return prisma.userRole.findMany();
+  } else {
+    return prisma.userRole.findMany({
+      where: {
+        name: {
+          not: 'admin'
+        }
+      }
+    });
+  }
 }
 
 // Add this function at the end of the file

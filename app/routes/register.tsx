@@ -12,7 +12,9 @@ import { ClientOnly } from "~/components/ClientOnly";
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await getUserId(request);
   if (userId) return redirect("/dashboard");
-  const roles = await getAllRoles();
+  
+  // Assume non-admin for registration page
+  const roles = await getAllRoles(false);
   return json({ roles });
 };
 
@@ -29,6 +31,11 @@ export const action: ActionFunction = async ({ request }) => {
     !role
   ) {
     return json({ error: "Invalid form data" }, { status: 400 });
+  }
+
+  // Prevent creation of admin accounts through registration
+  if (role === 'admin') {
+    return json({ error: "Invalid role selection" }, { status: 400 });
   }
 
   try {

@@ -111,3 +111,8 @@ export async function requireRole(request: Request, ...roles: string[]) {
   
   return userId;
 }
+
+export async function isUserAdmin(userId: string): Promise<boolean> {
+  const userRoles = await getUserRoles(userId);
+  return userRoles.some(role => role.name === 'admin');
+}

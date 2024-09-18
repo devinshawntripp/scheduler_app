@@ -4,6 +4,17 @@ const bcrypt = require('bcryptjs');
 const prisma = new PrismaClient();
 
 async function seed() {
+  // Create contractor role
+  await prisma.userRole.upsert({
+    where: { name: 'contractor' },
+    update: {},
+    create: { name: 'contractor' },
+  });
+
+
+
+
+
   const adminEmail = 'admin@example.com';
   const adminPassword = 'adminpassword'; // Use a strong password in production
 
@@ -17,6 +28,7 @@ async function seed() {
       update: {},
       create: { name: 'admin' },
     });
+
 
     // Create admin user
     const hashedPassword = await bcrypt.hash(adminPassword, 10);
