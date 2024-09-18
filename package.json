@@ -14,7 +14,7 @@
     "db-deploy": "npx prisma migrate dev --name init",
     "db:gen": "npx prisma generate",
     "lint": "eslint --ignore-path .gitignore --cache --cache-location ./node_modules/.cache/eslint .",
-    "start": "remix-serve ./build/server/index.js -p ${PORT:-3000}",
+    "start": "remix-serve ./build/server/index.js -p ${PORT:-3001}",
     "typecheck": "tsc",
     "db:push": "npx prisma db push",
     "dev:services": "docker-compose -f docker-compose.dev.yml up -d",
