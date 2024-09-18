@@ -1,11 +1,11 @@
-import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcryptjs';
+const { PrismaClient } = require('@prisma/client');
+const bcrypt = require('bcryptjs');
 
 const prisma = new PrismaClient();
 
 async function seed() {
   const adminEmail = 'admin@example.com';
-  const adminPassword = 'adminpassword'; // You should use a strong password in production
+  const adminPassword = 'adminpassword'; // Use a strong password in production
 
   // Check if admin user already exists
   const existingAdmin = await prisma.user.findUnique({ where: { email: adminEmail } });
@@ -25,8 +25,8 @@ async function seed() {
         email: adminEmail,
         password: hashedPassword,
         roles: {
-          connect: { id: adminRole.id }
-        }
+          connect: { id: adminRole.id },
+        },
       },
     });
 

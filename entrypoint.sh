@@ -9,10 +9,7 @@ do
 done
 echo "Database is up and running!"
 
-# Reset the database (this will drop all tables and recreate them)
-npx prisma db push --force-reset
-
-# Run migrations
+# Deploy migrations
 npx prisma migrate deploy
 
 # Generate Prisma client
