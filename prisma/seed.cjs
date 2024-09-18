@@ -11,8 +11,11 @@ async function seed() {
     create: { name: 'contractor' },
   });
 
-
-
+  await prisma.userRole.upsert({
+    where: { name: 'team_owner' },
+    update: {},
+    create: { name: 'team_owner' },
+  });
 
 
   const adminEmail = 'admin@example.com';
