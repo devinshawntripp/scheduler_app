@@ -33,7 +33,7 @@ export default function App() {
         <Meta />
         <Links />
       </head>
-      <body className="h-full bg-gray-900 text-white">
+      <body className="h-full bg-transparent">
         <Outlet />
         <ScrollRestoration />
         <Scripts />

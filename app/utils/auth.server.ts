@@ -36,14 +36,18 @@ const storage = createCookieSessionStorage({
   },
 });
 
-export async function createUser(email: string, password: string, role: UserRole) {
+export async function createUser(email: string, password: string, roles: string[]) {
   const existingUser = await getUserByEmail(email);
   if (existingUser) {
-    throw new Error("User already exists");
+    return null;
   }
 
-  const user = await createUserInDB(email, password, role);
-  return user;
+  const user = await createUserInDB(email, password, roles);
+  if (!user) {
+    return null;
+  }
+
+  return { id: user.id, email };
 }
 
 export async function createUserSession(userId: string, redirectTo: string) {

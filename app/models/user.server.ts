@@ -21,8 +21,8 @@ export async function createUser(email: string, password: string, roles: string[
         password: hashedPassword,
         roles: {
           connectOrCreate: roles.map(role => ({
-            where: { id: role },
-            create: { id: role, name: role }
+            where: { name: role },
+            create: { name: role }
           }))
         }
       },
@@ -200,4 +200,4 @@ export async function updateUser(userId: string, data: Partial<User>) {
     where: { id: userId },
     data
   });
-} 
+}
