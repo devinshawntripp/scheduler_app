@@ -3,12 +3,19 @@ import { Form, useActionData } from '@remix-run/react';
 import { requireUserId } from '../utils/auth.server';
 import { prisma } from '~/db.server';
 import { sendInvitationEmail } from '~/utils/email.server';
+import { getUserRole } from '~/models/user.server';
 
 export const action: ActionFunction = async ({ request }) => {
   const userId = await requireUserId(request);
   const user = await prisma.user.findUnique({ where: { id: userId } });
 
-  if (user?.role !== 'team_owner') {
+  if (!user) {
+    return json({ error: 'User not found' }, { status: 404 });
+  }
+
+  const userRole = await getUserRole(userId);
+
+  if (userRole !== 'team_owner') {
     return json({ error: 'Only team owners can invite contractors' }, { status: 403 });
   }
 

@@ -200,6 +200,31 @@ export async function getAllRoles(isAdmin: boolean) {
 
 // Add this function at the end of the file
 export async function removeUser(userId: string) {
+  // First, delete all associated bookings
+  await prisma.booking.deleteMany({
+    where: {
+      
+     contractorId: userId,
+      
+    }
+  });
+
+  // Delete all associated events
+  await prisma.event.deleteMany({
+    where: { userId: userId }
+  });
+
+  // Delete all invitations sent by this user
+  await prisma.invitation.deleteMany({
+    where: { teamOwnerId: userId }
+  });
+
+  // Delete all invitations received by this user
+  await prisma.invitation.deleteMany({
+    where: { email: { equals: (await prisma.user.findUnique({ where: { id: userId } }))?.email } }
+  });
+
+  // Finally, delete the user
   return prisma.user.delete({
     where: { id: userId }
   });
@@ -210,4 +235,17 @@ export async function updateUser(userId: string, data: Partial<User>) {
     where: { id: userId },
     data
   });
+}
+
+export async function getUserRole(userId: string): Promise<string | null> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    include: { roles: true },
+  });
+
+  if (!user || user.roles.length === 0) {
+    return null;
+  }
+
+  return user.roles[0].name;
 }

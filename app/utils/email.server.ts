@@ -4,7 +4,7 @@ import { prisma } from "~/db.server"; // Add this import
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || "localhost",
   port: parseInt(process.env.SMTP_PORT || "1025"),
-  secure: false, // Use TLS
+  secure: process.env.SMTP_SECURE === "true", // Use TLS
   auth: {
     user: process.env.SMTP_USER || "",
     pass: process.env.SMTP_PASS || "",
