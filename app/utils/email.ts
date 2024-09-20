@@ -1,5 +1,6 @@
 import type { ExtendedBooking } from "~/types";
 import nodemailer from 'nodemailer';
+import { formatInTimeZone } from 'date-fns-tz';
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || 'localhost',
@@ -13,6 +14,10 @@ const transporter = nodemailer.createTransport({
 });
 
 export async function sendEmailNotification(email: string, booking: ExtendedBooking): Promise<void> {
+  const formatDate = (date: Date) => {
+    return formatInTimeZone(date, 'America/Chicago', 'MMM d, yyyy h:mm a zzz');
+  };
+
   const mailOptions = {
     from: process.env.SMTP_FROM || 'noreply@scheduler.com',
     to: email,
@@ -20,8 +25,8 @@ export async function sendEmailNotification(email: string, booking: ExtendedBook
     text: `You have a new booking:
     Customer: ${booking.customerFirstName} ${booking.customerLastName}
     Address: ${booking.address}, ${booking.city}, ${booking.state}
-    Start Date/Time: ${booking.startDateTime}
-    End Date/Time: ${booking.endDateTime}
+    Start Date/Time: ${formatDate(new Date(booking.startDateTime))}
+    End Date/Time: ${formatDate(new Date(booking.endDateTime))}
     Description: ${booking.description}`,
   };
 
