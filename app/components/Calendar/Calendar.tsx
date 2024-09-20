@@ -79,12 +79,29 @@ const Calendar: React.FC<CalendarProps> = React.memo(({ userId, events: propEven
     stickyHeaderDates: false,
   }), [events, isMobile]);
 
+  const mobileStyles = `
+    @media (max-width: 767px) {
+      .fc .fc-toolbar {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+      .fc .fc-toolbar-title {
+        font-size: 1.2em;
+      }
+      .fc .fc-button {
+        padding: 0.3em 0.5em;
+        font-size: 0.9em;
+      }
+    }
+  `;
+
   if (fetcher.state === "loading") {
     return <div className="text-neon-blue">Loading events...</div>;
   }
 
   return (
     <div className="calendar-container">
+      <style>{mobileStyles}</style>
       <FullCalendar {...calendarOptions} />
     </div>
   );
