@@ -249,3 +249,13 @@ export async function getUserRole(userId: string): Promise<string | null> {
 
   return user.roles[0].name;
 }
+
+//get all roles
+export async function getAllUserRoles(userId: string): Promise<string[] | null> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    include: { roles: true },
+  });
+
+  return user?.roles.map(role => role.name) || [];
+}
