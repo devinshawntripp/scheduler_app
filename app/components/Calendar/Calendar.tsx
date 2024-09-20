@@ -3,6 +3,7 @@ import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
+import listPlugin from '@fullcalendar/list';
 import { useFetcher } from '@remix-run/react';
 import { APP_TIME_ZONE } from '~/config/app-config';
 
@@ -20,6 +21,18 @@ interface CalendarProps {
 const Calendar: React.FC<CalendarProps> = React.memo(({ userId, events: propEvents }) => {
   const fetcher = useFetcher();
   const [events, setEvents] = useState(propEvents || []);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     if (propEvents) {
@@ -36,12 +49,15 @@ const Calendar: React.FC<CalendarProps> = React.memo(({ userId, events: propEven
   }, [fetcher.data, propEvents]);
 
   const calendarOptions = useMemo(() => ({
-    plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
-    initialView: 'timeGridWeek',
+    plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin],
+    initialView: isMobile ? 'listWeek' : 'timeGridWeek',
     headerToolbar: {
       left: 'prev,next today',
       center: 'title',
-      right: 'dayGridMonth,timeGridWeek,timeGridDay'
+      right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+    },
+    views: {
+      listWeek: { buttonText: 'List' }
     },
     slotDuration: '00:30:00',
     slotLabelInterval: '01:00',
@@ -56,12 +72,17 @@ const Calendar: React.FC<CalendarProps> = React.memo(({ userId, events: propEven
           <i>{arg.event.title}</i>
         </>
       )
-    }
-  }), [events]);
+    },
+    height: 'auto',
+    aspectRatio: isMobile ? 0.8 : 1.35,
+    handleWindowResize: true,
+    stickyHeaderDates: false,
+  }), [events, isMobile]);
 
   if (fetcher.state === "loading") {
     return <div className="text-neon-blue">Loading events...</div>;
   }
+
   return (
     <div className="calendar-container">
       <FullCalendar {...calendarOptions} />
