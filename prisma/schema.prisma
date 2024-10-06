@@ -24,6 +24,9 @@ model User {
   events              Event[]
   sentInvitations     Invitation[]
   hasUnreadInvitation Boolean   @default(false)
+  tier                String    @default("basic")
+  apiKey              String?   @unique
+  usageCount          Int       @default(0)
 }
 
 model UserRole {

@@ -2,6 +2,7 @@ import { PrismaClient, Prisma } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import type { ExtendedUser } from "~/types";
 import { prisma } from "~/db.server";
+import { generateApiKey } from '~/utils/apiKey.server';
 
 // Remove this line as we're importing prisma from db.server
 // import { prisma } from "~/db.server";
@@ -51,7 +52,13 @@ export async function getEmailById(id: string): Promise<string | null> {
 }
 
 export async function getUserById(id: string): Promise<ExtendedUser | null> {
-  return prisma.user.findUnique({ where: { id }, include: { roles: true } });
+  return prisma.user.findUnique({
+    where: { id },
+    include: {
+      roles: true,
+      // Include any other relations you need
+    }
+  });
 }
 
 export async function getEmployeesByTeamOwnerId(teamOwnerId: string) {
@@ -83,9 +90,9 @@ export async function getTeamMembers(teamOwnerId: string) {
   console.log('Fetching team members for teamOwnerId:', teamOwnerId);
   const members = await prisma.user.findMany({
     where: { teamOwnerId },
-    select: { 
-      id: true, 
-      email: true, 
+    select: {
+      id: true,
+      email: true,
       roles: {
         select: {
           name: true
@@ -203,9 +210,9 @@ export async function removeUser(userId: string) {
   // First, delete all associated bookings
   await prisma.booking.deleteMany({
     where: {
-      
-     contractorId: userId,
-      
+
+      contractorId: userId,
+
     }
   });
 
@@ -233,7 +240,10 @@ export async function removeUser(userId: string) {
 export async function updateUser(userId: string, data: Partial<User>) {
   return prisma.user.update({
     where: { id: userId },
-    data
+    data: {
+      ...data,
+      apiKey: data.apiKey || generateApiKey(),
+    },
   });
 }
 

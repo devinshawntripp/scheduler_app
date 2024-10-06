@@ -4,13 +4,14 @@ import jwt from "jsonwebtoken";
 import { getUserByEmail, createUser as createUserInDB, getUserById, getUserRoles } from "~/models/user.server";
 import type { UserRole } from "../models/user.server";
 import { getSession } from "~/utils/session.server"; // Update this import path
+import { prisma } from "~/db.server";
 
 type LoginForm = {
   email: string;
   password: string;
 };
 
-export async function login({email, password} : LoginForm) {
+export async function login({ email, password }: LoginForm) {
   const user = await getUserByEmail(email);
   console.log("found User:", user);
   if (!user || !await bcrypt.compare(password, user.password)) {
@@ -102,17 +103,32 @@ export async function logout(request: Request) {
 export async function requireRole(request: Request, ...roles: string[]) {
   const userId = await requireUserId(request);
   const userRoles = await getUserRoles(userId);
-  
+
   const hasRequiredRole = roles.some(role => userRoles.some(userRole => userRole.name === role));
-  
+
   if (!hasRequiredRole) {
     throw new Response("Unauthorized", { status: 403 });
   }
-  
+
   return userId;
 }
 
 export async function isUserAdmin(userId: string): Promise<boolean> {
   const userRoles = await getUserRoles(userId);
   return userRoles.some(role => role.name === 'admin');
+}
+
+export async function validateApiKey(apiKey: string) {
+  const user = await prisma.user.findUnique({ where: { apiKey } });
+  if (!user) return false;
+
+  const usageLimit = user.tier === 'basic' ? 50 : user.tier === 'pro' ? 500 : Infinity;
+  return user.usageCount < usageLimit;
+}
+
+export async function incrementUsage(apiKey: string) {
+  await prisma.user.update({
+    where: { apiKey },
+    data: { usageCount: { increment: 1 } }
+  });
 }

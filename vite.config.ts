@@ -12,6 +12,10 @@ export default defineConfig({
           route("/api/events", "routes/api/events.ts");
           route("/api/bookings", "routes/api/bookings.ts");
           route("/api/create-contractor", "routes/api/create-contractor.ts"); // Add this line
+          route("/embed/scheduler", "routes/embed.scheduler.tsx");
+          route("/embed/script", "routes/embed.script.tsx");
+          route("/embed-test", "routes/_app.embed-test.tsx");
+          route("/api/available-times", "routes/api.available-times.ts");
         });
       },
     }),

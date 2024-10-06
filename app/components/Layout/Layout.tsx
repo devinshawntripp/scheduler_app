@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, Form, useNavigate } from '@remix-run/react';
 import { motion } from 'framer-motion';
-import { FaUser, FaBell, FaCalendar, FaBookmark, FaCog, FaSignOutAlt, FaBars, FaEnvelope } from 'react-icons/fa';
+import { FaUser, FaBell, FaCalendar, FaBookmark, FaCog, FaSignOutAlt, FaBars, FaEnvelope, FaCode, FaVial, FaCreditCard } from 'react-icons/fa';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -19,8 +19,9 @@ export default function Layout({ children }: LayoutProps) {
     { icon: FaCog, text: 'Settings', link: '/settings' },
     { icon: FaBars, text: 'Dashboard', link: '/dashboard' },
     { icon: FaEnvelope, text: 'Invites', link: '/invites' },
-    //make it only visible to admin role
     { icon: FaUser, text: 'Admin', link: '/admin', visible: 'admin' },
+    { icon: FaVial, text: 'Embed Test', link: '/embed-test', visible: 'admin' },
+    { icon: FaCreditCard, text: 'Upgrade Plan', link: '/payment' },
   ];
 
   return (
