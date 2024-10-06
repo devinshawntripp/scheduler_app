@@ -22,6 +22,7 @@ export default function Layout({ children }: LayoutProps) {
     { icon: FaUser, text: 'Admin', link: '/admin', visible: 'admin' },
     { icon: FaVial, text: 'Embed Test', link: '/embed-test', visible: 'admin' },
     { icon: FaCreditCard, text: 'Upgrade Plan', link: '/payment' },
+    { icon: FaCode, text: 'Embed Code', link: '/embed-code' },
   ];
 
   return (

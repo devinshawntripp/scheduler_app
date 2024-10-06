@@ -14,6 +14,8 @@ echo "Database is up and running!"
 # Deploy migrations
 npx prisma migrate deploy
 
+echo "Migrations deployed"
+
 # Generate Prisma client
 npx prisma generate
 
