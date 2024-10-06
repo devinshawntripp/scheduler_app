@@ -8,41 +8,41 @@ datasource db {
 }
 
 model User {
-  id                  String    @id @default(uuid())
-  email               String    @unique
+  id                  String       @id @default(uuid())
+  email               String       @unique
   password            String
-  roles               UserRole[]
-  teamOwnerId         String?
-  teamOwner           User?     @relation("TeamMembers", fields: [teamOwnerId], references: [id])
-  teamMembers         User[]    @relation("TeamMembers")
-  invitedByTeamOwner  String?
   googleCalendarId    String?
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
-  bookings            Booking[] @relation("ContractorBookings")
-  ownedBookings       Booking[] @relation("TeamOwnerBookings")
+  teamOwnerId         String?
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+  invitedByTeamOwner  String?
+  hasUnreadInvitation Boolean      @default(false)
+  apiKey              String?      @unique
+  tier                String       @default("basic")
+  usageCount          Int          @default(0)
+  bookings            Booking[]    @relation("ContractorBookings")
+  ownedBookings       Booking[]    @relation("TeamOwnerBookings")
   events              Event[]
   sentInvitations     Invitation[]
-  hasUnreadInvitation Boolean   @default(false)
-  tier                String    @default("basic")
-  apiKey              String?   @unique
-  usageCount          Int       @default(0)
+  teamOwner           User?        @relation("TeamMembers", fields: [teamOwnerId], references: [id])
+  teamMembers         User[]       @relation("TeamMembers")
+  roles               UserRole[]   @relation("UserToUserRole")
 }
 
 model UserRole {
-  id     String @id @default(uuid())
-  name   String @unique
-  users  User[]
+  id    String @id @default(uuid())
+  name  String @unique
+  users User[] @relation("UserToUserRole")
 }
 
 model Invitation {
   id          String   @id @default(cuid())
   email       String
   teamOwnerId String
-  teamOwner   User     @relation(fields: [teamOwnerId], references: [id])
   expiresAt   DateTime
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  teamOwner   User     @relation(fields: [teamOwnerId], references: [id])
 }
 
 model Booking {
@@ -55,12 +55,12 @@ model Booking {
   city              String
   state             String
   description       String
-  startDateTime     DateTime
-  endDateTime       DateTime
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
-  teamOwner         User     @relation("TeamOwnerBookings", fields: [teamOwnerId], references: [id])
+  endDateTime       DateTime
+  startDateTime     DateTime
   contractor        User     @relation("ContractorBookings", fields: [contractorId], references: [id])
+  teamOwner         User     @relation("TeamOwnerBookings", fields: [teamOwnerId], references: [id])
 }
 
 model Event {
