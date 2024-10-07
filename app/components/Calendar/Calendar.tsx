@@ -22,6 +22,7 @@ const Calendar: React.FC<CalendarProps> = React.memo(({ userId, events: propEven
   const fetcher = useFetcher();
   const [events, setEvents] = useState(propEvents || []);
   const [isMobile, setIsMobile] = useState(false);
+  const [selectedSlot, setSelectedSlot] = useState<{ start: Date; end: Date } | null>(null);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -47,6 +48,23 @@ const Calendar: React.FC<CalendarProps> = React.memo(({ userId, events: propEven
       setEvents(fetcher.data.events);
     }
   }, [fetcher.data, propEvents]);
+
+  const handleDateSelect = (selectInfo: any) => {
+    setSelectedSlot({
+      start: selectInfo.start,
+      end: selectInfo.end,
+    });
+  };
+
+  const handleBookAppointment = () => {
+    if (selectedSlot) {
+      // Implement the logic to book the appointment
+      console.log('Booking appointment:', selectedSlot);
+      // You can use a fetcher here to send the booking data to your server
+      // After successful booking, update the events state
+      setSelectedSlot(null);
+    }
+  };
 
   const calendarOptions = useMemo(() => ({
     plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin],
@@ -77,6 +95,8 @@ const Calendar: React.FC<CalendarProps> = React.memo(({ userId, events: propEven
     aspectRatio: isMobile ? 0.8 : 1.35,
     handleWindowResize: true,
     stickyHeaderDates: false,
+    selectable: true,
+    select: handleDateSelect,
   }), [events, isMobile]);
 
   const mobileStyles = `
@@ -103,6 +123,15 @@ const Calendar: React.FC<CalendarProps> = React.memo(({ userId, events: propEven
     <div className="calendar-container">
       <style>{mobileStyles}</style>
       <FullCalendar {...calendarOptions} />
+      {selectedSlot && (
+        <div className="appointment-form">
+          <h3>Book Appointment</h3>
+          <p>Start: {selectedSlot.start.toLocaleString()}</p>
+          <p>End: {selectedSlot.end.toLocaleString()}</p>
+          <button onClick={handleBookAppointment}>Book</button>
+          <button onClick={() => setSelectedSlot(null)}>Cancel</button>
+        </div>
+      )}
     </div>
   );
 });

@@ -17,6 +17,7 @@ export default defineConfig({
           route("/embed-test", "routes/_app.embed-test.tsx");
           route("/api/available-times", "routes/api.available-times.ts");
           route("/embed-code", "routes/_app.embed-code.tsx");
+          route("/register", "routes/register.tsx");
         });
       },
     }),

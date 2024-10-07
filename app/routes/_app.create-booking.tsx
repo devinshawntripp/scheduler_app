@@ -10,7 +10,7 @@ export const loader: LoaderFunction = async ({ request }) => {
   if (!user) {
     throw new Response("Not Found", { status: 404 });
   }
-  if (user.role !== "team_owner") {
+  if (!user.roles.some((role) => role.name === "team_owner")) {
     return redirect("/dashboard");
   }
   return { userId: user.id };

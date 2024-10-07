@@ -8,11 +8,12 @@ import { Particles } from "react-tsparticles";
 import { loadSlim } from "tsparticles-slim";
 import type { Engine } from "tsparticles-engine";
 import { ClientOnly } from "~/components/ClientOnly";
+import { generateApiKey } from '~/utils/apiKey.server';
 
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await getUserId(request);
   if (userId) return redirect("/dashboard");
-  
+
   // Assume non-admin for registration page
   const roles = await getAllRoles(false);
   return json({ roles });
@@ -38,15 +39,12 @@ export const action: ActionFunction = async ({ request }) => {
     return json({ error: "Invalid role selection" }, { status: 400 });
   }
 
-  try {
-    const user = await createUser(email, password, [role]);
-    if (!user) {
-      return json({ error: "User creation failed" }, { status: 400 });
-    }
-    return createUserSession(user.id, "/dashboard");
-  } catch (error) {
-    return json({ error: "Error creating user" }, { status: 500 });
+  const apiKey = generateApiKey();
+  const user = await createUser(email, password, apiKey);
+  if (!user) {
+    return json({ error: "User creation failed" }, { status: 400 });
   }
+  return createUserSession(user.id, "/dashboard");
 };
 
 function ParticlesBackground() {
@@ -55,81 +53,81 @@ function ParticlesBackground() {
   }, []);
   const particlesLoaded = useCallback(async (container: any) => {
     await console.log(container);
-}, []);
+  }, []);
 
   return (
     <Particles
-    id="tsparticles"
-    init={particlesInit}
-    loaded={particlesLoaded}
-    options={{
+      id="tsparticles"
+      init={particlesInit}
+      loaded={particlesLoaded}
+      options={{
         background: {
-            color: "transparent",
+          color: "transparent",
         },
         fpsLimit: 120,
         interactivity: {
-            events: {
-                onClick: {
-                    enable: true,
-                    mode: "push",
-                },
-                onHover: {
-                    enable: true,
-                    mode: "repulse",
-                },
-                resize: true,
+          events: {
+            onClick: {
+              enable: true,
+              mode: "push",
             },
-            modes: {
-                push: {
-                    quantity: 4,
-                },
-                repulse: {
-                    distance: 200,
-                    duration: 0.4,
-                },
+            onHover: {
+              enable: true,
+              mode: "repulse",
             },
+            resize: true,
+          },
+          modes: {
+            push: {
+              quantity: 4,
+            },
+            repulse: {
+              distance: 200,
+              duration: 0.4,
+            },
+          },
         },
         particles: {
-            color: {
-                value: "#ffffff",
+          color: {
+            value: "#ffffff",
+          },
+          links: {
+            color: "#ffffff",
+            distance: 150,
+            enable: true,
+            opacity: 0.5,
+            width: 1,
+          },
+          move: {
+            direction: "none",
+            enable: true,
+            outModes: {
+              default: "bounce",
             },
-            links: {
-                color: "#ffffff",
-                distance: 150,
-                enable: true,
-                opacity: 0.5,
-                width: 1,
+            random: false,
+            speed: 6,
+            straight: false,
+          },
+          number: {
+            density: {
+              enable: true,
+              area: 800,
             },
-            move: {
-                direction: "none",
-                enable: true,
-                outModes: {
-                    default: "bounce",
-                },
-                random: false,
-                speed: 6,
-                straight: false,
-            },
-            number: {
-                density: {
-                    enable: true,
-                    area: 800,
-                },
-                value: 80,
-            },
-            opacity: {
-                value: 0.5,
-            },
-            shape: {
-                type: "circle",
-            },
-            size: {
-                value: { min: 1, max: 5 },
-            },
+            value: 80,
+          },
+          opacity: {
+            value: 0.5,
+          },
+          shape: {
+            type: "circle",
+          },
+          size: {
+            value: { min: 1, max: 5 },
+          },
         },
         detectRetina: true,
-    }}
-/>
+      }}
+    />
   );
 }
 

@@ -1,5 +1,6 @@
 import React from 'react';
-import { Link } from '@remix-run/react';
+import { Link, useFetcher } from '@remix-run/react';
+import { FaGoogle, FaApple, FaCheckCircle } from 'react-icons/fa';
 import BookingForm from '../Booking/BookingForm';
 import type { ExtendedBooking } from '~/types';
 import { formatInTimeZone } from 'date-fns-tz';
@@ -7,17 +8,20 @@ import { APP_TIME_ZONE } from '~/config/app-config';
 
 interface TeamOwnerDashboardProps {
   userId: string;
+  googleCalendarRefreshToken: string | null;
   bookings: ExtendedBooking[];
 }
 
-export default function TeamOwnerDashboard({ userId, bookings }: TeamOwnerDashboardProps) {
+export default function TeamOwnerDashboard({ userId, bookings, googleCalendarRefreshToken }: TeamOwnerDashboardProps) {
   return (
-    <div>
-      <div className="mb-6">
+    <div className="p-4">
+      <h1 className="text-2xl font-bold mb-4">Team Owner Dashboard</h1>
+
+      <div>
         <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Create New Booking</h3>
         <BookingForm teamOwnerId={userId} />
       </div>
-      
+
       <div>
         <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Upcoming Bookings</h3>
         {bookings.length > 0 ? (

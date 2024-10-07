@@ -3,7 +3,6 @@ import DateSelector from './DateSelector';
 import TimeSelector from './TimeSelector';
 import SubmitButton from './SubmitButton';
 import { useFetcher } from "@remix-run/react";
-import { sendEmailNotification } from "~/utils/email"; // Import the email notification function
 
 interface EmbeddableBookingWidgetProps {
     userId: string;
@@ -13,10 +12,15 @@ interface EmbeddableBookingWidgetProps {
 const EmbeddableBookingWidget: React.FC<EmbeddableBookingWidgetProps> = ({ userId, apiKey }) => {
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
+    const [customerFirstName, setCustomerFirstName] = useState<string | null>(null);
+    const [customerLastName, setCustomerLastName] = useState<string | null>(null);
+    const [city, setCity] = useState<string | null>(null);
+    const [state, setState] = useState<string | null>(null);
+    const [address, setAddress] = useState<string | null>(null);
+    const [description, setDescription] = useState<string | null>(null);
     const fetcher = useFetcher();
 
     const handleDateSelect = (date: Date) => {
-        console.log("Date selected:", date); // Add this line for debugging
         setSelectedDate(date);
         setSelectedTime(null);
     };
@@ -30,16 +34,23 @@ const EmbeddableBookingWidget: React.FC<EmbeddableBookingWidgetProps> = ({ userI
             const formData = new FormData();
             formData.append("apiKey", apiKey);
             formData.append("userId", userId);
-            formData.append("date", selectedDate.toISOString());
+            formData.append("date", selectedDate.toISOString().split('T')[0]);
             formData.append("time", selectedTime);
+            formData.append("duration", "60"); // or however you're determining duration
+            // formData.append("customerFirstName", customerFirstName); // Add these fields to your form
+            // formData.append("customerLastName", customerLastName);
+            // formData.append("city", city);
+            // formData.append("state", state);
+            // formData.append("address", address);
+            // formData.append("description", description);
 
             fetcher.submit(formData, { method: "post", action: "/api/create-booking" });
         }
     };
 
     return (
-        <div className="embeddable-booking-widget p-4 bg-base-200 rounded-lg shadow-lg">
-            <h2 className="text-2xl font-bold text-primary mb-4">Book an Appointment</h2>
+        <div className="p-4" style={{ background: 'transparent' }}>
+            <h2 className="text-2xl font-bold mb-4">Book an Appointment</h2>
             <DateSelector onSelectDate={handleDateSelect} selectedDate={selectedDate} />
             {selectedDate && (
                 <TimeSelector

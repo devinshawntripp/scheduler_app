@@ -1,20 +1,17 @@
-import React from 'react';
 import { json, LoaderFunction } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
+import { validateApiKey, incrementUsage } from '~/utils/auth.server';
+import { getAllowedDomains } from '~/models/user.server';
 import EmbeddableBookingWidget from '~/components/EmbeddableBookingWidget/EmbeddableBookingWidget';
-import { validateApiKey, incrementUsage } from '~/utils/auth.server'; // You'll need to implement this function
-
-type LoaderData = {
-    userId: string;
-};
 
 export const loader: LoaderFunction = async ({ request }) => {
     const url = new URL(request.url);
     const userId = url.searchParams.get('userId');
     const apiKey = url.searchParams.get('apiKey');
+    const origin = request.headers.get('Origin') || request.headers.get('Referer');
 
-    if (!userId || !apiKey) {
-        return json({ error: 'User ID and API key are required' }, { status: 400 });
+    if (!userId || !apiKey || !origin) {
+        return json({ error: 'Missing required parameters or origin' }, { status: 400 });
     }
 
     const isValidApiKey = await validateApiKey(apiKey);
@@ -22,21 +19,40 @@ export const loader: LoaderFunction = async ({ request }) => {
         return json({ error: 'Invalid API key or usage limit exceeded' }, { status: 403 });
     }
 
+    const allowedDomains = await getAllowedDomains(userId);
+    const isAllowedOrigin = allowedDomains.some(domain => origin.includes(domain));
+
+    if (!isAllowedOrigin) {
+        return json({ error: 'Origin not allowed' }, { status: 403 });
+    }
+
     await incrementUsage(apiKey);
 
-    return json({ userId });
+    return json({ userId, apiKey, isAllowed: true });
 };
 
 export default function EmbeddableScheduler() {
-    const { userId } = useLoaderData<LoaderData>();
+    const { userId, apiKey, isAllowed, error } = useLoaderData<typeof loader>();
 
-    if (!userId) {
-        return <div>Error: User ID is required</div>;
-    }
-
+    // Add a style tag to ensure transparency
     return (
-        <div className="embeddable-scheduler p-4">
-            <EmbeddableBookingWidget userId={userId} apiKey={userId.apiKey} />
-        </div>
+        <>
+            <style>{`
+                html, body {
+                    background: transparent !important;
+                    margin: 0;
+                    padding: 0;
+                }
+            `}</style>
+            <div style={{ background: 'transparent' }}>
+                {!isAllowed ? (
+                    <div className="p-4 text-center">
+                        <p className="text-error">{error || 'This domain is not authorized to embed the scheduler.'}</p>
+                    </div>
+                ) : (
+                    <EmbeddableBookingWidget userId={userId} apiKey={apiKey} />
+                )}
+            </div>
+        </>
     );
 }

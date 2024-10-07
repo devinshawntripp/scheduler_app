@@ -27,13 +27,13 @@ export async function createInvitation(teamOwnerId: string, email: string) {
 }
 
 export async function inviteContractor(teamOwnerId: string, email: string) {
-  const existingUser = await prisma.user.findUnique({ where: { email } });
+  const existingUser = await prisma.user.findUnique({ where: { email }, select: { roles: true, teamOwnerId: true } });
 
   if (existingUser) {
-    if (existingUser.role === 'contractor' && existingUser.teamOwnerId === teamOwnerId) {
+    if (existingUser.roles.some(role => role.name === 'contractor' && existingUser.teamOwnerId === teamOwnerId)) {
       throw new Error('This contractor is already in your team.');
     }
-    if (existingUser.role === 'team_owner') {
+    if (existingUser.roles.some(role => role.name === 'team_owner')) {
       throw new Error('This user is already a team owner and cannot be invited as a contractor.');
     }
   }
@@ -54,10 +54,60 @@ export async function getInvitations(email: string) {
     const invitations = await prisma.invitation.findMany({
       where: { email },
       orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        email: true,
+        teamOwnerId: true,
+        expiresAt: true,
+        createdAt: true,
+        teamOwner: true,
+      },
     });
     return invitations;
   } catch (error) {
     console.error("Error fetching invitations:", error);
+    throw error;
+  }
+}
+
+export async function acceptInvitation(invitationId: string) {
+  // Implement the logic to accept the invitation
+  // This might involve updating the user's teamOwnerId and deleting the invitation
+  // The exact implementation depends on your business logic
+  try {
+    const invitation = await prisma.invitation.findUnique({
+      where: { id: invitationId },
+    });
+
+    if (!invitation) {
+      throw new Error("Invitation not found");
+    }
+
+    const teamOwnerId = invitation.teamOwnerId;
+    //update user
+    await prisma.user.update({
+      where: { email: invitation.email },
+      data: { teamOwnerId: teamOwnerId },
+    });
+
+    await prisma.invitation.delete({
+      where: { id: invitationId },
+    });
+  } catch (error) {
+    console.error("Error accepting invitation:", error);
+    throw error;
+  }
+}
+
+export async function declineInvitation(invitationId: string) {
+  // Implement the logic to decline the invitation
+  // This might involve just deleting the invitation
+  try {
+    await prisma.invitation.delete({
+      where: { id: invitationId },
+    });
+  } catch (error) {
+    console.error("Error declining invitation:", error);
     throw error;
   }
 }

@@ -4,6 +4,7 @@ import { useLoaderData, Link } from '@remix-run/react';
 import EmbeddableBookingWidget from '~/components/EmbeddableBookingWidget/EmbeddableBookingWidget';
 import { requireUserId } from '~/utils/auth.server';
 import { getUserById } from '~/models/user.server';
+import Layout from '~/components/Layout/Layout';
 
 type LoaderData = {
     userId: string;
@@ -36,11 +37,13 @@ export default function EmbedTest() {
     }
 
     return (
-        <div className="container mx-auto p-4">
-            <h1 className="text-2xl font-bold mb-4">Embeddable Booking Widget Test</h1>
-            <div className="border p-4 rounded-lg">
-                <EmbeddableBookingWidget userId={userId} apiKey={apiKey} />
+        <Layout>
+            <div className="container mx-auto p-4">
+                <h1 className="text-2xl font-bold mb-4">Embeddable Booking Widget Test</h1>
+                <div className="border p-4 rounded-lg">
+                    <EmbeddableBookingWidget userId={userId} apiKey={apiKey} />
+                </div>
             </div>
-        </div>
+        </Layout>
     );
 }

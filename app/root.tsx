@@ -24,6 +24,8 @@ export const loader: LoaderFunction = async () => {
 
 export default function App() {
   const data = useLoaderData<typeof loader>();
+  const isEmbedded = typeof window !== 'undefined' && window.location.pathname.startsWith('/embed');
+
 
   return (
     <html lang="en" className="h-full dark">
@@ -33,7 +35,7 @@ export default function App() {
         <Meta />
         <Links />
       </head>
-      <body className="h-full bg-transparent">
+      <body className={isEmbedded ? '' : 'h-full bg-base-200'}>
         <Outlet />
         <ScrollRestoration />
         <Scripts />

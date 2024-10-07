@@ -1,5 +1,5 @@
 import { json, LoaderFunction, ActionFunction, redirect } from '@remix-run/node';
-import { useLoaderData, Form, Link, useNavigate, Outlet, useActionData } from '@remix-run/react';
+import { useLoaderData, Form, Link, useNavigate, Outlet, useActionData, useFetcher } from '@remix-run/react';
 import { requireUserId } from '~/utils/auth.server';
 import { getUserById } from '~/models/user.server';
 import TeamOwnerDashboard from '~/components/Dashboard/TeamOwnerDashboard';
@@ -8,7 +8,7 @@ import type { ExtendedUser, ExtendedBooking } from '~/types';
 import { useState, useEffect } from 'react';
 import { prisma } from "~/db.server";
 import { motion } from 'framer-motion';
-import { FaUser, FaBell, FaCalendar, FaBookmark, FaCog, FaSignOutAut } from 'react-icons/fa';
+import { FaUser, FaCalendar, FaBookmark, FaGoogle, FaApple, FaCheckCircle } from 'react-icons/fa';
 
 export const loader: LoaderFunction = async ({ request }) => {
   try {
@@ -64,12 +64,22 @@ export const action: ActionFunction = async ({ request }) => {
 function DashboardContent() {
   const { user, bookings, pendingInvitation } = useLoaderData<typeof loader>();
   const actionData = useActionData<{ error?: string }>();
+  const fetcher = useFetcher();
   const [isClient, setIsClient] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  const handleGoogleCalendarConnect = () => {
+    fetcher.submit({}, { method: 'post', action: '/api/connect-google-calendar' });
+  };
+
+  const handleAppleCalendarConnect = () => {
+    fetcher.submit({}, { method: 'post', action: '/api/connect-apple-calendar' });
+  };
+
 
   const handleInviteContractor = () => {
     navigate('/invite-contractor');
@@ -152,7 +162,7 @@ function DashboardContent() {
                     </button>
                   )}
                   {isContractor && (
-                    <Link to="/availability" className="btn btn-accent">
+                    <Link to="/profile" className="btn btn-accent">
                       <FaBookmark className="mr-2" /> Set Availability
                     </Link>
                   )}
@@ -186,7 +196,7 @@ function DashboardContent() {
             >
               <div className="card-body">
                 <h2 className="card-title text-primary">Team Owner Dashboard</h2>
-                <TeamOwnerDashboard userId={typedUser.id} bookings={typedBookings} />
+                <TeamOwnerDashboard userId={typedUser.id} bookings={typedBookings} googleCalendarRefreshToken={typedUser.googleCalendarRefreshToken} />
               </div>
             </motion.div>
           )}
@@ -198,8 +208,31 @@ function DashboardContent() {
             className="card bg-base-100 shadow-xl"
           >
             <div className="card-body">
-              <h2 className="card-title text-primary">Update Profile</h2>
-              <ProfileForm user={typedUser} actionData={actionData} />
+              {/* Calendar Integration Buttons */}
+              <div className="mb-6">
+                <h2 className="text-xl font-semibold mb-2">Calendar Integration</h2>
+                <div className="flex space-x-4">
+                  {typedUser.googleCalendarRefreshToken ? (
+                    <div className="flex items-center text-success">
+                      <FaCheckCircle className="mr-2" />
+                      Google Calendar Connected
+                    </div>
+                  ) : (
+                    <button
+                      onClick={handleGoogleCalendarConnect}
+                      className="btn btn-primary flex items-center"
+                    >
+                      <FaGoogle className="mr-2" /> Connect Google Calendar
+                    </button>
+                  )}
+                  <button
+                    onClick={handleAppleCalendarConnect}
+                    className="btn btn-secondary flex items-center"
+                  >
+                    <FaApple className="mr-2" /> Connect Apple Calendar
+                  </button>
+                </div>
+              </div>
             </div>
           </motion.div>
         </div>

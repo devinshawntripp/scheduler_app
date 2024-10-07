@@ -25,12 +25,11 @@ const TimeSelector: React.FC<TimeSelectorProps> = ({ selectedDate, onSelectTime,
     }, [fetcher.data]);
 
     const formatTime = (time: string) => {
-        const parsedTime = parse(time, 'HH:mm', new Date());
-        return format(parsedTime, 'h:mm a');
+        return format(parse(time, 'HH:mm', new Date()), 'h:mm a');
     };
 
     return (
-        <div className="time-selector mb-4">
+        <div className="mb-4">
             <h3 className="text-lg font-semibold mb-2">Select a Time</h3>
             {fetcher.state === 'loading' ? (
                 <p>Loading available times...</p>
@@ -40,7 +39,7 @@ const TimeSelector: React.FC<TimeSelectorProps> = ({ selectedDate, onSelectTime,
                         <button
                             key={time}
                             onClick={() => onSelectTime(time)}
-                            className={`btn btn-outline ${selectedTime === time ? 'btn-primary' : 'btn-secondary'}`}
+                            className={`btn btn-sm ${selectedTime === time ? 'btn-secondary' : 'btn-outline btn-secondary'} transition-all duration-300 ease-in-out hover:scale-105`}
                         >
                             {formatTime(time)}
                         </button>

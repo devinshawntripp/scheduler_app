@@ -56,7 +56,9 @@ export async function getUserById(id: string): Promise<ExtendedUser | null> {
     where: { id },
     include: {
       roles: true,
-      // Include any other relations you need
+      // Remove the googleCalendarRefreshToken field as it's not a valid include
+      // If you need to include the Google Calendar refresh token, you should modify your Prisma schema
+      // to define this relationship correctly
     }
   });
 }
@@ -79,10 +81,10 @@ export async function getEmployeesByTeamOwnerId(teamOwnerId: string) {
   });
 }
 
-export async function updateUserGoogleCalendar(userId: string, googleCalendarId: string): Promise<ExtendedUser> {
+export async function updateUserGoogleCalendar(userId: string, refreshToken: string) {
   return prisma.user.update({
     where: { id: userId },
-    data: { googleCalendarId },
+    data: { googleCalendarRefreshToken: refreshToken },
   });
 }
 
@@ -237,13 +239,17 @@ export async function removeUser(userId: string) {
   });
 }
 
-export async function updateUser(userId: string, data: Partial<User>) {
+export async function updateUser(userId: string, data: Partial<{
+  email: string;
+  password: string;
+  tier: string;
+  activeSubscription: boolean;
+  apiKey: string;
+  stripeCustomerId: string;
+}>) {
   return prisma.user.update({
     where: { id: userId },
-    data: {
-      ...data,
-      apiKey: data.apiKey || generateApiKey(),
-    },
+    data,
   });
 }
 
@@ -268,4 +274,71 @@ export async function getAllUserRoles(userId: string): Promise<string[] | null> 
   });
 
   return user?.roles.map(role => role.name) || [];
+}
+
+export async function getAllowedDomains(userId: string): Promise<string[]> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    include: { allowedDomains: true },
+  });
+
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  return user.allowedDomains.map(d => d.domain);
+}
+
+export async function addAllowedDomain(userId: string, domain: string): Promise<void> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    include: { allowedDomains: true },
+  });
+
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  const domainLimit = getDomainLimitByTier(user.tier);
+
+  if (user.allowedDomains.length >= domainLimit) {
+    throw new Error(`You have reached the maximum number of allowed domains for your tier (${domainLimit})`);
+  }
+
+  await prisma.allowedDomain.create({
+    data: { userId, domain },
+  });
+}
+
+export async function removeAllowedDomain(userId: string, domain: string): Promise<void> {
+  await prisma.allowedDomain.deleteMany({
+    where: { userId, domain },
+  });
+}
+
+export function getDomainLimitByTier(tier: string): number {
+  switch (tier) {
+    case 'basic':
+      return 1;
+    case 'pro':
+      return 5;
+    case 'ultimate':
+      return 10;
+    default:
+      return 0;
+  }
+}
+
+// ... (keep other existing functions)
+
+export async function getUserWithGoogleCalendarStatus(userId: string) {
+  return prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      email: true,
+      // ... other fields you need
+      googleCalendarRefreshToken: true,
+    },
+  });
 }

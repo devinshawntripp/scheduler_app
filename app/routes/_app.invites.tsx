@@ -15,8 +15,8 @@ type Invitation = {
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await requireUserId(request);
   const user = await getUserById(userId);
-  
-  if (user?.roles.includes("team_owner")) {
+
+  if (user?.roles.some(role => role.name === 'team_owner')) {
     throw new Response('Forbidden', { status: 403 });
   }
 
@@ -27,8 +27,8 @@ export const loader: LoaderFunction = async ({ request }) => {
 export const action: ActionFunction = async ({ request }) => {
   const userId = await requireUserId(request);
   const user = await getUserById(userId);
-  
-  if (user?.role !== 'team_owner') {
+
+  if (user?.roles.some(role => role.name !== 'team_owner')) {
     throw new Response('Forbidden', { status: 403 });
   }
 
@@ -49,7 +49,7 @@ export default function Invites() {
   return (
     <div className="bg-base-200 min-h-screen p-6">
       <h1 className="text-3xl font-bold text-primary mb-6">Contractor Invitations</h1>
-      
+
       <Form method="post" className="mb-8">
         <div className="flex items-center space-x-4">
           <input
@@ -73,8 +73,8 @@ export default function Invites() {
       ) : (
         <ul className="space-y-4">
           {invitations.map((invitation) => (
-            <li 
-              key={invitation.id} 
+            <li
+              key={invitation.id}
               className="card bg-base-100 shadow-xl"
             >
               <div className="card-body">
