@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "npm run build:css && remix vite:build",
-    "build:css": "tailwindcss -m -i ./app/tailwind.css -o ./public/tailwind.css",
+    "build:css": "tailwindcss -w -i ./app/tailwind.css -o ./public/tailwind.css",
     "dev": "concurrently \"npm run dev:css\" \"remix vite:dev\"",
     "dev:css": "tailwindcss -w -i ./app/tailwind.css -o ./public/tailwind.css",
     "dev:stop": "docker-compose -f docker-compose.dev.yml down",
