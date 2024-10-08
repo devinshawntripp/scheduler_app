@@ -23,6 +23,7 @@ export async function sendEmailNotification(email: string, booking: ExtendedBook
     to: email,
     subject: 'New Booking Notification',
     text: `You have a new booking:
+    Customer Email: ${booking.customerEmail}
     Customer: ${booking.customerFirstName} ${booking.customerLastName}
     Address: ${booking.address}, ${booking.city}, ${booking.state}
     Start Date/Time: ${formatDate(new Date(booking.startDateTime))}

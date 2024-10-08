@@ -4,7 +4,7 @@ import { incrementUsage } from "~/utils/auth.server";
 import { validateApiKey } from "~/utils/apiKey.server";
 import { getUserById } from "~/models/user.server";
 import { google } from 'googleapis';
-import { sendEventNotification } from "~/utils/email.server";
+import { sendEmailNotification } from "~/utils/email";
 
 // Set up Google Calendar API
 const oauth2Client = new google.auth.OAuth2(
@@ -35,7 +35,45 @@ async function createGoogleCalendarEvent(refreshToken: string, booking: any) {
 }
 
 async function createAppleCalendarEvent(appleCalendarToken: string, booking: any) {
-    // Implement Apple Calendar integration here
+    // Implement Apple Calendar integration
+    if (!appleCalendarToken) {
+        console.error('Apple Calendar token is missing');
+        return;
+    }
+
+    try {
+        const ical = require('ical-generator');
+        const axios = require('axios');
+
+        // Create iCal event
+        const cal = ical({ name: 'Booking Calendar' });
+        cal.createEvent({
+            start: booking.startDateTime,
+            end: booking.endDateTime,
+            summary: `Booking with ${booking.customerFirstName} ${booking.customerLastName}`,
+            description: booking.description,
+            location: `${booking.address}, ${booking.city}, ${booking.state}`
+        });
+
+        // Generate iCal string
+        const icalString = cal.toString();
+
+        // Apple Calendar API endpoint
+        const appleCalendarEndpoint = 'https://caldav.icloud.com/';
+
+        // Send request to Apple Calendar
+        await axios.post(appleCalendarEndpoint, icalString, {
+            headers: {
+                'Content-Type': 'text/calendar',
+                'Authorization': `Bearer ${appleCalendarToken}`
+            }
+        });
+
+        console.log('Event added to Apple Calendar successfully');
+    } catch (error) {
+        console.error('Error adding event to Apple Calendar:', error);
+        throw error;
+    }
     console.log('Apple Calendar integration not implemented yet');
 }
 
@@ -45,6 +83,7 @@ export const action: ActionFunction = async ({ request }) => {
     const userId = formData.get("userId") as string;
     const date = formData.get("date") as string;
     const time = formData.get("time") as string;
+    const description = formData.get("description") as string;
     const duration = parseInt(formData.get("duration") as string) || 60; // Default to 60 minutes if not provided
 
     if (!apiKey) {
@@ -69,10 +108,11 @@ export const action: ActionFunction = async ({ request }) => {
                 endDateTime,
                 customerFirstName: formData.get("customerFirstName") as string || "John",
                 customerLastName: formData.get("customerLastName") as string || "Doe",
+                customerEmail: formData.get("customerEmail") as string || "john.doe@example.com",
                 city: formData.get("city") as string || "Chicago",
                 state: formData.get("state") as string || "IL",
                 address: formData.get("address") as string || "123 Main St",
-                description: formData.get("description") as string || "Booking notes",
+                description: description || "Booking notes",
                 teamOwnerId: userId, // Assuming the contractor is also the team owner for now
             },
         });
@@ -96,9 +136,17 @@ export const action: ActionFunction = async ({ request }) => {
         }
 
         // Send email notification
-        await sendEventNotification(user.email, booking);
+        await sendEmailNotification(user.email, booking);
 
-        return json({ success: true, message: "Booking created successfully", booking });
+        return json({ success: true, message: "Booking created successfully", booking },
+            {
+                headers: {
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'GET,HEAD,PUT,PATCH,POST,DELETE',
+                    'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+                }
+            }
+        );
     } catch (error) {
         console.error("Error creating booking:", error);
         return json({ error: "Failed to create booking" }, { status: 500 });

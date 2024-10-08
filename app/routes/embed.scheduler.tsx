@@ -4,9 +4,8 @@ import { incrementUsage } from '~/utils/auth.server';
 import { validateApiKey } from '~/utils/apiKey.server';
 import { getAllowedDomains } from '~/models/user.server';
 import EmbeddableBookingWidget from '~/components/EmbeddableBookingWidget/EmbeddableBookingWidget';
-import { corsMiddleware } from '~/utils/cors.server';
 
-const loader: LoaderFunction = async ({ request }) => {
+export const loader: LoaderFunction = async ({ request }) => {
     const url = new URL(request.url);
     const userId = url.searchParams.get('userId');
     const apiKey = url.searchParams.get('apiKey');
@@ -58,6 +57,3 @@ export default function EmbeddableScheduler() {
         </>
     );
 }
-
-const wrappedLoader = corsMiddleware(loader);
-export { wrappedLoader as loader };
