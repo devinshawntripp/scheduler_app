@@ -1,6 +1,7 @@
 import { json, LoaderFunction } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
-import { validateApiKey, incrementUsage } from '~/utils/auth.server';
+import { incrementUsage } from '~/utils/auth.server';
+import { validateApiKey } from '~/utils/apiKey.server';
 import { getAllowedDomains } from '~/models/user.server';
 import EmbeddableBookingWidget from '~/components/EmbeddableBookingWidget/EmbeddableBookingWidget';
 import { corsMiddleware } from '~/utils/cors.server';

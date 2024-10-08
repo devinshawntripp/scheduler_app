@@ -13,13 +13,13 @@ export default function handleRequest(
   responseStatusCode: number,
   responseHeaders: Headers,
   remixContext: EntryContext
-) {
+): Promise<Response> | Response {
 
   // Apply CORS middleware to all API routes
-  if (new URL(request.url).pathname.startsWith('/api/')) {
+  if (request.url && new URL(request.url).pathname.startsWith('/api/')) {
     return corsMiddleware((args) =>
       handleRequest(args.request, responseStatusCode, responseHeaders, remixContext)
-    )({ request, params: {}, context: {} });
+    )({ request, params: {}, context: {} }) as Promise<Response> | Response;
   }
 
   return isbot(request.headers.get("user-agent"))

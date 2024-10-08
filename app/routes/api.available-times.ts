@@ -1,55 +1,60 @@
 import { json, LoaderFunction } from '@remix-run/node';
-import { requireUserId } from '~/utils/auth.server';
+import { validateApiKey } from '~/utils/apiKey.server';
 import { prisma } from '~/db.server';
-import { format, addHours, setHours, setMinutes } from 'date-fns';
-
+import { startOfDay, endOfDay, format } from 'date-fns';
 
 export const loader: LoaderFunction = async ({ request }) => {
-
-    await requireUserId(request);
-
     const url = new URL(request.url);
     const date = url.searchParams.get('date');
     const userId = url.searchParams.get('userId');
+    const apiKey = url.searchParams.get('apiKey');
 
-    if (!date || !userId) {
-        return json({ error: 'Date and userId are required' }, { status: 400 });
+    if (!date || !userId || !apiKey) {
+        return json({ error: 'Missing required parameters' }, { status: 400 });
     }
 
-    const selectedDate = new Date(date);
-    const startOfDay = setMinutes(setHours(selectedDate, 9), 0); // Start at 9:00 AM
-    const endOfDay = setMinutes(setHours(selectedDate, 17), 0); // End at 5:00 PM
+    const isValidApiKey = await validateApiKey(apiKey);
+    if (!isValidApiKey) {
+        return json({ error: 'Invalid API key' }, { status: 401 });
+    }
 
-    // Fetch existing bookings for the selected date
-    const existingBookings = await prisma.booking.findMany({
-        where: {
-            contractorId: userId,
-            startDateTime: {
-                gte: startOfDay,
-                lt: endOfDay,
+    try {
+        const parsedDate = new Date(date);
+        const dayOfWeek = parsedDate.getDay();
+
+        const availability = await prisma.availability.findFirst({
+            where: { userId, dayOfWeek },
+        });
+
+        if (!availability) {
+            return json({ availableTimes: [] });
+        }
+
+        const startTime = new Date(`${format(parsedDate, 'yyyy-MM-dd')}T${availability.startTime}`);
+        const endTime = new Date(`${format(parsedDate, 'yyyy-MM-dd')}T${availability.endTime}`);
+        const timeSlots = [];
+
+        for (let time = startTime; time < endTime; time.setMinutes(time.getMinutes() + 30)) {
+            timeSlots.push(format(time, 'HH:mm'));
+        }
+
+        const bookedSlots = await prisma.booking.findMany({
+            where: {
+                contractorId: userId,
+                startDateTime: {
+                    gte: startOfDay(parsedDate),
+                    lt: endOfDay(parsedDate),
+                },
             },
-        },
-        select: {
-            startDateTime: true,
-            endDateTime: true,
-        },
-    });
+            select: { startDateTime: true },
+        });
 
-    // Generate all possible time slots
-    const allTimeSlots = [];
-    let currentSlot = startOfDay;
-    while (currentSlot < endOfDay) {
-        allTimeSlots.push(format(currentSlot, 'HH:mm'));
-        currentSlot = addHours(currentSlot, 1);
+        const bookedTimes = new Set(bookedSlots.map(slot => format(slot.startDateTime, 'HH:mm')));
+        const availableTimes = timeSlots.filter(time => !bookedTimes.has(time));
+
+        return json({ availableTimes });
+    } catch (error) {
+        console.error('Error fetching available times:', error);
+        return json({ error: 'Failed to fetch available times' }, { status: 500 });
     }
-
-    // Filter out booked time slots
-    const availableTimes = allTimeSlots.filter(timeSlot => {
-        const slotTime = new Date(`${date}T${timeSlot}`);
-        return !existingBookings.some(booking =>
-            slotTime >= booking.startDateTime && slotTime < booking.endDateTime
-        );
-    });
-
-    return json({ availableTimes });
 };

@@ -342,3 +342,8 @@ export async function getUserWithGoogleCalendarStatus(userId: string) {
     },
   });
 }
+
+export async function getRole(roleName: string) {
+  return prisma.userRole.findUnique({ where: { name: roleName } });
+}
+

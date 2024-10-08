@@ -1,6 +1,7 @@
 import { ActionFunction, json } from "@remix-run/node";
 import { prisma } from "~/db.server";
-import { validateApiKey, incrementUsage } from "~/utils/auth.server";
+import { incrementUsage } from "~/utils/auth.server";
+import { validateApiKey } from "~/utils/apiKey.server";
 import { getUserById } from "~/models/user.server";
 import { google } from 'googleapis';
 import { sendEventNotification } from "~/utils/email.server";

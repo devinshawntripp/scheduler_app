@@ -118,14 +118,6 @@ export async function isUserAdmin(userId: string): Promise<boolean> {
   return userRoles.some(role => role.name === 'admin');
 }
 
-export async function validateApiKey(apiKey: string) {
-  const user = await prisma.user.findUnique({ where: { apiKey } });
-  if (!user) return false;
-
-  const usageLimit = user.tier === 'basic' ? 50 : user.tier === 'pro' ? 500 : Infinity;
-  return user.usageCount < usageLimit;
-}
-
 export async function incrementUsage(apiKey: string) {
   await prisma.user.update({
     where: { apiKey },

@@ -4,11 +4,9 @@ import { createUser, getUserId, createUserSession } from "~/utils/auth.server";
 import { getAllRoles } from "~/models/user.server";
 import { useCallback, useState, useEffect } from "react";
 import { Particles } from "react-tsparticles";
-// import { loadFull } from "tsparticles";
 import { loadSlim } from "tsparticles-slim";
 import type { Engine } from "tsparticles-engine";
 import { ClientOnly } from "~/components/ClientOnly";
-import { generateApiKey } from '~/utils/apiKey.server';
 
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await getUserId(request);
@@ -39,8 +37,8 @@ export const action: ActionFunction = async ({ request }) => {
     return json({ error: "Invalid role selection" }, { status: 400 });
   }
 
-  const apiKey = generateApiKey();
-  const user = await createUser(email, password, apiKey);
+
+  const user = await createUser(email, password, [role]);
   if (!user) {
     return json({ error: "User creation failed" }, { status: 400 });
   }
