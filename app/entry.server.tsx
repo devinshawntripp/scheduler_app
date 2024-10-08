@@ -3,6 +3,8 @@ import type { EntryContext } from "@remix-run/node";
 import { RemixServer } from "@remix-run/react";
 import isbot from "isbot";
 import { renderToPipeableStream } from "react-dom/server";
+import { corsMiddleware } from "./utils/cors.server";
+
 
 const ABORT_DELAY = 5000;
 
@@ -12,6 +14,14 @@ export default function handleRequest(
   responseHeaders: Headers,
   remixContext: EntryContext
 ) {
+
+  // Apply CORS middleware to all API routes
+  if (new URL(request.url).pathname.startsWith('/api/')) {
+    return corsMiddleware((args) =>
+      handleRequest(args.request, responseStatusCode, responseHeaders, remixContext)
+    )({ request, params: {}, context: {} });
+  }
+
   return isbot(request.headers.get("user-agent"))
     ? handleBotRequest(
       request,

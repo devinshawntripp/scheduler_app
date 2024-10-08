@@ -2,10 +2,9 @@ import { json, LoaderFunction } from '@remix-run/node';
 import { requireUserId } from '~/utils/auth.server';
 import { prisma } from '~/db.server';
 import { format, addHours, setHours, setMinutes } from 'date-fns';
-import { corsMiddleware } from '~/utils/cors.server';
 
 
-const loader: LoaderFunction = async ({ request }) => {
+export const loader: LoaderFunction = async ({ request }) => {
 
     await requireUserId(request);
 
@@ -54,6 +53,3 @@ const loader: LoaderFunction = async ({ request }) => {
 
     return json({ availableTimes });
 };
-
-const wrappedLoader = corsMiddleware(loader);
-export { wrappedLoader as loader };

@@ -6,17 +6,18 @@ interface TimeSelectorProps {
     selectedDate: Date;
     onSelectTime: (time: string) => void;
     userId: string;
+    apiKey: string; // Add this line
     selectedTime: string | null;
 }
 
-const TimeSelector: React.FC<TimeSelectorProps> = ({ selectedDate, onSelectTime, userId, selectedTime }) => {
+const TimeSelector: React.FC<TimeSelectorProps> = ({ selectedDate, onSelectTime, userId, apiKey, selectedTime }) => {
     const [availableTimes, setAvailableTimes] = useState<string[]>([]);
     const fetcher = useFetcher();
 
     useEffect(() => {
         const formattedDate = format(selectedDate, 'yyyy-MM-dd');
-        fetcher.load(`/api/available-times?date=${formattedDate}&userId=${userId}`);
-    }, [selectedDate, userId]);
+        fetcher.load(`/api/available-times?date=${formattedDate}&userId=${userId}&apiKey=${apiKey}`);
+    }, [selectedDate, userId, apiKey]);
 
     useEffect(() => {
         if (fetcher.data && fetcher.data.availableTimes) {

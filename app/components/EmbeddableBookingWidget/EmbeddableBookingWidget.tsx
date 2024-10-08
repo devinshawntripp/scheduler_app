@@ -57,6 +57,7 @@ const EmbeddableBookingWidget: React.FC<EmbeddableBookingWidgetProps> = ({ userI
                     selectedDate={selectedDate}
                     onSelectTime={handleTimeSelect}
                     userId={userId}
+                    apiKey={apiKey}
                     selectedTime={selectedTime}
                 />
             )}
