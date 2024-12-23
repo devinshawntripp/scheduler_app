@@ -12,30 +12,82 @@ export const loader: LoaderFunction = async ({ request }) => {
     const origin = request.headers.get('Origin') || request.headers.get('Referer');
 
     if (!userId || !apiKey || !origin) {
-        return json({ error: 'Missing required parameters or origin' }, { status: 400 });
+        return json({
+            error: 'Missing required parameters or origin',
+            details: { userId: !!userId, apiKey: !!apiKey, origin: !!origin }
+        }, { status: 400 });
     }
 
-    const isValidApiKey = await validateApiKey(apiKey);
-    if (!isValidApiKey) {
-        return json({ error: 'Invalid API key or usage limit exceeded' }, { status: 403 });
+    try {
+        await validateApiKey(apiKey);
+    } catch (error) {
+        console.error('API Key validation error:', error);
+        return json({
+            error: error instanceof Error ? error.message : 'Invalid API key',
+            details: { message: error instanceof Error ? error.message : 'Unknown error' }
+        }, {
+            status: 403,
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET,HEAD,PUT,PATCH,POST,DELETE',
+                'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+            }
+        });
     }
 
-    const allowedDomains = await getAllowedDomains(userId);
-    const isAllowedOrigin = allowedDomains.some(domain => origin.includes(domain));
+    try {
+        const allowedDomains = await getAllowedDomains(userId);
+        const isAllowedOrigin = allowedDomains.some(domain =>
+            origin.toLowerCase().includes(domain.toLowerCase())
+        );
 
-    if (!isAllowedOrigin) {
-        return json({ error: 'Origin not allowed' }, { status: 403 });
+        if (!isAllowedOrigin) {
+            console.error('Domain not allowed:', origin, 'Allowed domains:', allowedDomains);
+            return json({
+                error: 'Origin not allowed',
+                details: { origin, allowedDomains }
+            }, {
+                status: 403,
+                headers: {
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'GET,HEAD,PUT,PATCH,POST,DELETE',
+                    'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+                }
+            });
+        }
+
+        await incrementUsage(apiKey);
+
+        return json({
+            userId,
+            apiKey,
+            isAllowed: true
+        }, {
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET,HEAD,PUT,PATCH,POST,DELETE',
+                'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+            }
+        });
+    } catch (error) {
+        console.error('Embed scheduler error:', error);
+        return json({
+            error: 'Server error',
+            details: error instanceof Error ? error.message : 'Unknown error'
+        }, {
+            status: 500,
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET,HEAD,PUT,PATCH,POST,DELETE',
+                'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+            }
+        });
     }
-
-    await incrementUsage(apiKey);
-
-    return json({ userId, apiKey, isAllowed: true });
 };
 
 export default function EmbeddableScheduler() {
-    const { userId, apiKey, isAllowed, error } = useLoaderData<typeof loader>();
+    const { userId, apiKey, isAllowed, error, details } = useLoaderData<typeof loader>();
 
-    // Add a style tag to ensure transparency
     return (
         <>
             <style>{`
@@ -46,9 +98,20 @@ export default function EmbeddableScheduler() {
                 }
             `}</style>
             <div style={{ background: 'transparent' }}>
-                {!isAllowed ? (
+                {error ? (
                     <div className="p-4 text-center">
-                        <p className="text-error">{error || 'This domain is not authorized to embed the scheduler.'}</p>
+                        <div className="alert alert-error">
+                            <h3 className="font-bold">Error</h3>
+                            <p>{error}</p>
+                            {details && (
+                                <details className="mt-2 text-sm">
+                                    <summary>Technical Details</summary>
+                                    <pre className="mt-2 text-left">
+                                        {JSON.stringify(details, null, 2)}
+                                    </pre>
+                                </details>
+                            )}
+                        </div>
                     </div>
                 ) : (
                     <EmbeddableBookingWidget userId={userId} apiKey={apiKey} />

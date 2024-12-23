@@ -15,6 +15,13 @@ export default function handleRequest(
   remixContext: EntryContext
 ): Promise<Response> | Response {
 
+  // Add CORS headers for embed routes
+  if (request.url.includes('/embed/')) {
+    responseHeaders.set('Access-Control-Allow-Origin', '*');
+    responseHeaders.set('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE');
+    responseHeaders.set('Access-Control-Allow-Headers', 'Content-Type,Authorization');
+  }
+
   // Apply CORS middleware to all API routes
   if (request.url && new URL(request.url).pathname.startsWith('/api/')) {
     return corsMiddleware((args) =>
