@@ -1,8 +1,8 @@
 # Use an official Node runtime as the base image
 FROM node:20.10-alpine
 
-# Install netcat-openbsd for 'nc' command (required for 'nc' in entrypoint.sh)
-RUN apk add --no-cache netcat-openbsd
+# Install PostgreSQL client and netcat
+RUN apk add --no-cache netcat-openbsd postgresql-client
 
 # Set the working directory in the container
 WORKDIR /app
@@ -10,7 +10,7 @@ WORKDIR /app
 # Copy package.json and package-lock.json
 COPY package*.json ./
 
-RUN  rm -rf node_modules && rm -rf .cache && npm cache clean --force
+RUN rm -rf node_modules && rm -rf .cache && npm cache clean --force
 
 # Install dependencies
 RUN npm ci

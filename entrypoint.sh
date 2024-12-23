@@ -16,15 +16,19 @@ echo "Attempting to deploy migrations..."
 if ! npx prisma migrate deploy; then
     echo "Migration deploy failed, attempting to fix schema..."
     
-    # Create a backup of the current schema
-    echo "Creating schema backup..."
-    pg_dump -h db -U postgres -d scheduler --schema-only > schema_backup.sql
+    # Apply the migration directly using psql
+    echo "Applying migration directly..."
+    PGPASSWORD=postgres psql -h db -U postgres -d scheduler -c "
+        ALTER TABLE \"Booking\" ADD COLUMN IF NOT EXISTS \"customerEmail\" TEXT;
+        UPDATE \"Booking\" SET \"customerEmail\" = 'no-email@example.com' WHERE \"customerEmail\" IS NULL;
+        ALTER TABLE \"Booking\" ALTER COLUMN \"customerEmail\" SET NOT NULL;
+    "
     
-    # Apply the new migration
-    echo "Applying new migration..."
-    npx prisma db push --accept-data-loss
+    # Mark migration as applied
+    echo "Marking migration as applied..."
+    npx prisma migrate resolve --applied 20240326_add_customer_email
     
-    echo "Migrations fixed and applied"
+    echo "Migration fixed and applied"
 fi
 
 echo "Migrations deployed"
