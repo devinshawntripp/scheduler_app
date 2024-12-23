@@ -111,14 +111,27 @@ export const action: ActionFunction = async ({ request }) => {
 
         // Validate origin
         const allowedDomains = await getAllowedDomains(userId);
-        const isAllowedOrigin = allowedDomains.some(domain =>
-            origin.toLowerCase().includes(domain.toLowerCase())
-        );
+
+        // Parse the origin URL to get just the hostname
+        const originUrl = new URL(origin);
+        const originHostname = originUrl.hostname;
+
+        // Check if any allowed domain matches the origin hostname
+        const isAllowedOrigin = allowedDomains.some(domain => {
+            try {
+                // Remove protocol and path from allowed domain if present
+                const domainHostname = new URL(domain.startsWith('http') ? domain : `https://${domain}`).hostname;
+                return originHostname.includes(domainHostname);
+            } catch {
+                // If domain can't be parsed as URL, do a simple include check
+                return originHostname.includes(domain.replace(/^https?:\/\//, ''));
+            }
+        });
 
         if (!isAllowedOrigin) {
             return json({
                 error: "Origin not allowed",
-                details: { origin, allowedDomains }
+                details: { origin: originHostname, allowedDomains }
             }, {
                 status: 403,
                 headers: {
