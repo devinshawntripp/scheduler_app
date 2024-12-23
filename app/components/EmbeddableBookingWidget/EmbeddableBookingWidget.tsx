@@ -71,9 +71,13 @@ const EmbeddableBookingWidget: React.FC<EmbeddableBookingWidgetProps> = ({ userI
     };
 
     return (
-        <div className="p-4" style={{ background: 'transparent', backdropFilter: 'none' }}>
+        <div className="p-4" style={{
+            background: 'transparent',
+            backdropFilter: 'none',
+            backgroundColor: 'transparent'
+        }}>
             {error ? (
-                <div className="alert alert-error bg-opacity-90">
+                <div className="alert alert-error" style={{ backgroundColor: 'rgba(255, 0, 0, 0.1)' }}>
                     <h3 className="font-bold">Error</h3>
                     <p>{error}</p>
                     {error.includes('usage limit') && (
@@ -99,8 +103,8 @@ const EmbeddableBookingWidget: React.FC<EmbeddableBookingWidgetProps> = ({ userI
                 </div>
             ) : (
                 <>
-                    <h2 className="text-2xl font-bold mb-4">Book an Appointment</h2>
-                    <div className="bg-transparent">
+                    <h2 className="text-2xl font-bold mb-4 text-current">Book an Appointment</h2>
+                    <div style={{ backgroundColor: 'transparent' }}>
                         <DateSelector onSelectDate={handleDateSelect} selectedDate={selectedDate} />
                         {selectedDate && (
                             <TimeSelector
@@ -112,15 +116,17 @@ const EmbeddableBookingWidget: React.FC<EmbeddableBookingWidgetProps> = ({ userI
                             />
                         )}
                         {selectedDate && selectedTime && (
-                            <div className="bg-transparent">
+                            <div style={{ backgroundColor: 'transparent' }}>
                                 <input
-                                    className="input input-bordered w-full max-w-xs mb-4 mr-4 bg-opacity-50"
+                                    className="input w-full max-w-xs mb-4 mr-4"
+                                    style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }}
                                     type="text"
                                     placeholder="Email"
                                     onChange={handleCustomerEmailChange}
                                 />
                                 <input
-                                    className="input input-bordered w-full max-w-xs mb-4 bg-opacity-50"
+                                    className="input w-full max-w-xs mb-4"
+                                    style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }}
                                     type="text"
                                     placeholder="What do you need help with?"
                                     onChange={handleDescriptionChange}
