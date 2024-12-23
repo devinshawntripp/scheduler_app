@@ -116,22 +116,55 @@ export default function EmbeddableScheduler() {
     return (
         <>
             <style>{`
+                :root {
+                    color-scheme: none !important;
+                }
+                
                 html, body {
                     background: transparent !important;
                     margin: 0;
                     padding: 0;
                 }
+
                 .scheduler-container {
                     background: transparent !important;
+                    color-scheme: none !important;
                 }
+
                 .scheduler-container > * {
                     background: transparent !important;
                 }
+
+                .scheduler-container [data-theme] {
+                    background: transparent !important;
+                }
+
+                .scheduler-container [data-theme="dark"] {
+                    background: transparent !important;
+                    color-scheme: none !important;
+                }
+
                 .alert {
                     background-color: rgba(255, 0, 0, 0.1) !important;
                 }
+
+                /* Override any dark theme backgrounds */
+                [data-theme="dark"] .scheduler-container,
+                [data-theme="dark"] .scheduler-container > * {
+                    background: transparent !important;
+                }
+
+                /* Keep button styles but ensure container is transparent */
+                .scheduler-container .btn {
+                    background-color: inherit;
+                }
+
+                /* Ensure inputs have proper contrast */
+                .scheduler-container .input {
+                    background-color: rgba(255, 255, 255, 0.1);
+                }
             `}</style>
-            <div className="scheduler-container p-4">
+            <div className="scheduler-container p-4" data-theme="light">
                 {error ? (
                     <div className="p-4 text-center">
                         <div className="alert">
