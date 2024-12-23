@@ -18,6 +18,9 @@ RUN npm ci
 # Copy the rest of the application code
 COPY . .
 
+# Generate Prisma Client
+RUN npx prisma generate
+
 RUN ls -la
 
 # Build the application
@@ -29,6 +32,7 @@ RUN npm run build
 # Ensure Unix-style line endings (in case the file was created on Windows)
 # RUN sed -i 's/\r$//' ./entrypoint.sh
 # COPY entrypoint.sh /entrypoint.sh
+
 
 # Make the entrypoint script executable
 RUN chmod +x ./entrypoint.sh
