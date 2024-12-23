@@ -39,6 +39,22 @@ export const loader: LoaderFunction = async ({ request }) => {
 
         // Clean up the origin and domains for comparison
         let cleanOrigin = origin.replace(/^https?:\/\//, '').split('/')[0];
+
+        // Allow requests from our own domain
+        if (cleanOrigin === 'schedule.devintripp.com') {
+            return json({
+                userId,
+                apiKey,
+                isAllowed: true
+            }, {
+                headers: {
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'GET,HEAD,PUT,PATCH,POST,DELETE',
+                    'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+                }
+            });
+        }
+
         const cleanAllowedDomains = allowedDomains.map(domain =>
             domain.replace(/^https?:\/\//, '').split('/')[0]
         );
