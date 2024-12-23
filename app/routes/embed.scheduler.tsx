@@ -121,32 +121,20 @@ export default function EmbeddableScheduler() {
                     margin: 0;
                     padding: 0;
                 }
-                * {
-                    background-color: transparent;
+                .scheduler-container {
+                    background: transparent !important;
                 }
-                .input, .select, .btn {
-                    background-color: rgba(255, 255, 255, 0.1) !important;
+                .scheduler-container > * {
+                    background: transparent !important;
                 }
                 .alert {
                     background-color: rgba(255, 0, 0, 0.1) !important;
                 }
-                .btn-primary {
-                    background-color: rgba(79, 70, 229, 0.8) !important;
-                }
-                .btn-outline {
-                    background-color: transparent !important;
-                }
-                [data-theme] {
-                    background-color: transparent !important;
-                }
             `}</style>
-            <div style={{
-                backgroundColor: 'transparent',
-                background: 'transparent'
-            }}>
+            <div className="scheduler-container p-4">
                 {error ? (
                     <div className="p-4 text-center">
-                        <div className="alert" style={{ backgroundColor: 'rgba(255, 0, 0, 0.1)' }}>
+                        <div className="alert">
                             <h3 className="font-bold">Error</h3>
                             <p>{error}</p>
                             {details && (
