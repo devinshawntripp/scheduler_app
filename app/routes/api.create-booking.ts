@@ -90,11 +90,15 @@ export const action: ActionFunction = async ({ request }) => {
     }
 
     const origin = request.headers.get('Origin') || request.headers.get('Referer');
+    if (!origin) {
+        return json({ error: "Missing origin" }, { status: 400 });
+    }
+
     const formData = await request.formData();
     const apiKey = formData.get("apiKey") as string;
     const userId = formData.get("userId") as string;
 
-    if (!apiKey || !userId || !origin) {
+    if (!apiKey || !userId) {
         return json({ error: "Missing required parameters" }, {
             status: 400,
             headers: {
@@ -113,7 +117,15 @@ export const action: ActionFunction = async ({ request }) => {
         const allowedDomains = await getAllowedDomains(userId);
 
         // Clean up the origin and domains for comparison
-        const cleanOrigin = origin.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
+        let cleanOrigin = origin.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
+
+        // If the origin is from our own scheduler domain, get the parent window's origin
+        if (cleanOrigin.includes('schedule.devintripp.com')) {
+            // For form submissions from the embedded widget, trust the request
+            // as it's coming from our own domain
+            return true;
+        }
+
         const cleanAllowedDomains = allowedDomains.map(domain =>
             domain.replace(/^https?:\/\//, '').replace(/\/.*$/, '')
         );
