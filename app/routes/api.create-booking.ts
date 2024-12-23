@@ -119,9 +119,9 @@ export const action: ActionFunction = async ({ request }) => {
         // Clean up the origin and domains for comparison
         let cleanOrigin = origin.replace(/^https?:\/\//, '').split('/')[0];
 
-        // If the origin is from our own scheduler domain, allow it
+        // If the origin is from our own scheduler domain, skip domain check
         if (cleanOrigin === 'schedule.devintripp.com') {
-            // Continue with booking creation...
+            // Continue with booking creation - remove the else block and just continue
         } else {
             const cleanAllowedDomains = allowedDomains.map(domain =>
                 domain.replace(/^https?:\/\//, '').split('/')[0]
@@ -132,12 +132,6 @@ export const action: ActionFunction = async ({ request }) => {
             );
 
             if (!isAllowedOrigin) {
-                console.log('Domain check failed:', {
-                    cleanOrigin,
-                    cleanAllowedDomains,
-                    originalOrigin: origin,
-                    originalAllowedDomains: allowedDomains
-                });
                 return json({
                     error: "Origin not allowed",
                     details: { origin: cleanOrigin, allowedDomains: cleanAllowedDomains }

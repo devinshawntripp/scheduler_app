@@ -57,7 +57,7 @@ model Booking {
   contractorId      String
   customerFirstName String
   customerLastName  String
-  customerEmail     String   @default("john.doe@example.com")
+  customerEmail     String
   address           String
   city              String
   state             String
