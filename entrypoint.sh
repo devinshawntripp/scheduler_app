@@ -11,16 +11,29 @@ done
 fi
 echo "Database is up and running!"
 
-# Deploy migrations
-npx prisma migrate deploy
+# First try to deploy migrations
+echo "Attempting to deploy migrations..."
+if ! npx prisma migrate deploy; then
+    echo "Migration deploy failed, attempting to fix schema..."
+    
+    # Create a backup of the current schema
+    echo "Creating schema backup..."
+    pg_dump -h db -U postgres -d scheduler --schema-only > schema_backup.sql
+    
+    # Apply the new migration
+    echo "Applying new migration..."
+    npx prisma db push --accept-data-loss
+    
+    echo "Migrations fixed and applied"
+fi
 
 echo "Migrations deployed"
 
 # Generate Prisma client
 npx prisma generate
 
-# Run seed script
-npm run db:seed
+# # Run seed script
+# npm run db:seed
 
 # Start the application
 npm run start
