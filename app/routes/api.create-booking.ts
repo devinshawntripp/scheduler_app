@@ -2,7 +2,7 @@ import { ActionFunction, json } from "@remix-run/node";
 import { prisma } from "~/db.server";
 import { incrementUsage } from "~/utils/auth.server";
 import { validateApiKey } from "~/utils/apiKey.server";
-import { getUserById } from "~/models/user.server";
+import { getUserById, getAllowedDomains } from "~/models/user.server";
 import { google } from 'googleapis';
 import { sendEmailNotification } from "~/utils/email";
 
@@ -78,77 +78,117 @@ async function createAppleCalendarEvent(appleCalendarToken: string, booking: any
 }
 
 export const action: ActionFunction = async ({ request }) => {
+    // Handle CORS preflight
+    if (request.method === 'OPTIONS') {
+        return new Response(null, {
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'POST',
+                'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+            },
+        });
+    }
+
+    const origin = request.headers.get('Origin') || request.headers.get('Referer');
     const formData = await request.formData();
     const apiKey = formData.get("apiKey") as string;
     const userId = formData.get("userId") as string;
-    const date = formData.get("date") as string;
-    const time = formData.get("time") as string;
-    const description = formData.get("description") as string;
-    const duration = parseInt(formData.get("duration") as string) || 60; // Default to 60 minutes if not provided
 
-    if (!apiKey) {
-        return json({ error: "API key is required" }, { status: 400 });
-    }
-
-    const isValidApiKey = await validateApiKey(apiKey);
-    if (!isValidApiKey) {
-        return json({ error: "Invalid API key or usage limit exceeded" }, { status: 403 });
+    if (!apiKey || !userId || !origin) {
+        return json({ error: "Missing required parameters" }, {
+            status: 400,
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'POST',
+                'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+            }
+        });
     }
 
     try {
-        // Combine date and time, then create Date objects
+        // Validate API key
+        await validateApiKey(apiKey);
+
+        // Validate origin
+        const allowedDomains = await getAllowedDomains(userId);
+        const isAllowedOrigin = allowedDomains.some(domain =>
+            origin.toLowerCase().includes(domain.toLowerCase())
+        );
+
+        if (!isAllowedOrigin) {
+            return json({
+                error: "Origin not allowed",
+                details: { origin, allowedDomains }
+            }, {
+                status: 403,
+                headers: {
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'POST',
+                    'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+                }
+            });
+        }
+
+        // Extract other form data
+        const date = formData.get("date") as string;
+        const time = formData.get("time") as string;
+        const description = formData.get("description") as string;
+        const duration = parseInt(formData.get("duration") as string) || 60;
+        const customerEmail = formData.get("customerEmail") as string;
+
+        // Create the booking
         const startDateTime = new Date(`${date}T${time}`);
         const endDateTime = new Date(startDateTime.getTime() + duration * 60000);
 
-        // Create the booking
         const booking = await prisma.booking.create({
             data: {
                 contractorId: userId,
                 startDateTime,
                 endDateTime,
-                customerFirstName: formData.get("customerFirstName") as string || "John",
-                customerLastName: formData.get("customerLastName") as string || "Doe",
-                customerEmail: formData.get("customerEmail") as string || "john.doe@example.com",
-                city: formData.get("city") as string || "Chicago",
-                state: formData.get("state") as string || "IL",
-                address: formData.get("address") as string || "123 Main St",
+                customerEmail,
+                customerFirstName: formData.get("customerFirstName") as string || "Guest",
+                customerLastName: formData.get("customerLastName") as string || "",
+                city: formData.get("city") as string || "",
+                state: formData.get("state") as string || "",
+                address: formData.get("address") as string || "",
                 description: description || "Booking notes",
-                teamOwnerId: userId, // Assuming the contractor is also the team owner for now
+                teamOwnerId: userId,
             },
         });
 
+        // Increment usage only after successful booking creation
         await incrementUsage(apiKey);
 
-        // Get user for calendar integration
+        // Handle calendar integrations and notifications
         const user = await getUserById(userId);
-        if (!user) {
-            throw new Error("User not found");
-        }
-
-        // Google Calendar integration
-        if (user.googleCalendarRefreshToken) {
+        if (user?.googleCalendarRefreshToken) {
             await createGoogleCalendarEvent(user.googleCalendarRefreshToken, booking);
         }
 
-        // Apple Calendar integration (placeholder)
-        if (user.appleCalendarToken) {
-            await createAppleCalendarEvent(user.appleCalendarToken, booking);
-        }
+        await sendEmailNotification(user!.email, booking);
 
-        // Send email notification
-        await sendEmailNotification(user.email, booking);
-
-        return json({ success: true, message: "Booking created successfully", booking },
+        return json(
+            { success: true, message: "Booking created successfully", booking },
             {
                 headers: {
                     'Access-Control-Allow-Origin': '*',
-                    'Access-Control-Allow-Methods': 'GET,HEAD,PUT,PATCH,POST,DELETE',
+                    'Access-Control-Allow-Methods': 'POST',
                     'Access-Control-Allow-Headers': 'Content-Type,Authorization',
-                }
+                },
             }
         );
     } catch (error) {
         console.error("Error creating booking:", error);
-        return json({ error: "Failed to create booking" }, { status: 500 });
+        return json(
+            { error: "Failed to create booking", details: error instanceof Error ? error.message : 'Unknown error' },
+            {
+                status: 500,
+                headers: {
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'POST',
+                    'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+                }
+            }
+        );
     }
 };
