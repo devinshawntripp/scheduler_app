@@ -37,27 +37,21 @@ export const loader: LoaderFunction = async ({ request }) => {
     try {
         const allowedDomains = await getAllowedDomains(userId);
 
-        const originUrl = new URL(origin);
-        const originHostname = originUrl.hostname;
+        // Clean up the origin and domains for comparison
+        const cleanOrigin = origin.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
+        const cleanAllowedDomains = allowedDomains.map(domain =>
+            domain.replace(/^https?:\/\//, '').replace(/\/.*$/, '')
+        );
 
-        const isAllowedOrigin = allowedDomains.some(domain => {
-            try {
-                const domainHostname = new URL(domain.startsWith('http') ? domain : `https://${domain}`).hostname;
-                return originHostname.includes(domainHostname);
-            } catch {
-                return originHostname.includes(domain.replace(/^https?:\/\//, ''));
-            }
-        });
+        const isAllowedOrigin = cleanAllowedDomains.some(domain =>
+            cleanOrigin === domain || cleanOrigin.endsWith(`.${domain}`)
+        );
 
         if (!isAllowedOrigin) {
-            console.error('Domain not allowed:', {
-                originHostname,
-                origin,
-                allowedDomains
-            });
+            console.error('Domain not allowed:', { cleanOrigin, cleanAllowedDomains });
             return json({
                 error: 'Origin not allowed',
-                details: { origin: originHostname, allowedDomains }
+                details: { origin: cleanOrigin, allowedDomains: cleanAllowedDomains }
             }, {
                 status: 403,
                 headers: {
