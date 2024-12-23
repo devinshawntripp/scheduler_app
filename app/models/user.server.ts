@@ -290,23 +290,11 @@ export async function getAllowedDomains(userId: string): Promise<string[]> {
 }
 
 export async function addAllowedDomain(userId: string, domain: string): Promise<void> {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    include: { allowedDomains: true },
-  });
-
-  if (!user) {
-    throw new Error('User not found');
-  }
-
-  const domainLimit = getDomainLimitByTier(user.tier);
-
-  if (user.allowedDomains.length >= domainLimit) {
-    throw new Error(`You have reached the maximum number of allowed domains for your tier (${domainLimit})`);
-  }
+  // Clean the domain before storing
+  const cleanDomain = domain.replace(/^https?:\/\//, '').split('/')[0];
 
   await prisma.allowedDomain.create({
-    data: { userId, domain },
+    data: { userId, domain: cleanDomain },
   });
 }
 

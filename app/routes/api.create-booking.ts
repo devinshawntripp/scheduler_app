@@ -117,35 +117,39 @@ export const action: ActionFunction = async ({ request }) => {
         const allowedDomains = await getAllowedDomains(userId);
 
         // Clean up the origin and domains for comparison
-        let cleanOrigin = origin.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
+        let cleanOrigin = origin.replace(/^https?:\/\//, '').split('/')[0];
 
-        // If the origin is from our own scheduler domain, get the parent window's origin
-        if (cleanOrigin.includes('schedule.devintripp.com')) {
-            // For form submissions from the embedded widget, trust the request
-            // as it's coming from our own domain
-            return true;
-        }
+        // If the origin is from our own scheduler domain, allow it
+        if (cleanOrigin === 'schedule.devintripp.com') {
+            // Continue with booking creation...
+        } else {
+            const cleanAllowedDomains = allowedDomains.map(domain =>
+                domain.replace(/^https?:\/\//, '').split('/')[0]
+            );
 
-        const cleanAllowedDomains = allowedDomains.map(domain =>
-            domain.replace(/^https?:\/\//, '').replace(/\/.*$/, '')
-        );
+            const isAllowedOrigin = cleanAllowedDomains.some(domain =>
+                cleanOrigin === domain
+            );
 
-        const isAllowedOrigin = cleanAllowedDomains.some(domain =>
-            cleanOrigin === domain || cleanOrigin.endsWith(`.${domain}`)
-        );
-
-        if (!isAllowedOrigin) {
-            return json({
-                error: "Origin not allowed",
-                details: { origin: cleanOrigin, allowedDomains: cleanAllowedDomains }
-            }, {
-                status: 403,
-                headers: {
-                    'Access-Control-Allow-Origin': '*',
-                    'Access-Control-Allow-Methods': 'POST',
-                    'Access-Control-Allow-Headers': 'Content-Type,Authorization',
-                }
-            });
+            if (!isAllowedOrigin) {
+                console.log('Domain check failed:', {
+                    cleanOrigin,
+                    cleanAllowedDomains,
+                    originalOrigin: origin,
+                    originalAllowedDomains: allowedDomains
+                });
+                return json({
+                    error: "Origin not allowed",
+                    details: { origin: cleanOrigin, allowedDomains: cleanAllowedDomains }
+                }, {
+                    status: 403,
+                    headers: {
+                        'Access-Control-Allow-Origin': '*',
+                        'Access-Control-Allow-Methods': 'POST',
+                        'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+                    }
+                });
+            }
         }
 
         // Extract other form data
