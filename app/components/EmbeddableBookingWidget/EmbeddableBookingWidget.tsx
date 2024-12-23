@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DateSelector from './DateSelector';
 import TimeSelector from './TimeSelector';
 import SubmitButton from './SubmitButton';
@@ -20,6 +20,13 @@ const EmbeddableBookingWidget: React.FC<EmbeddableBookingWidgetProps> = ({ userI
     const [address, setAddress] = useState<string | null>(null);
     const [description, setDescription] = useState<string | null>(null);
     const fetcher = useFetcher();
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (fetcher.data?.error) {
+            setError(fetcher.data.error);
+        }
+    }, [fetcher.data]);
 
     const handleDateSelect = (date: Date) => {
         setSelectedDate(date);
@@ -65,37 +72,66 @@ const EmbeddableBookingWidget: React.FC<EmbeddableBookingWidgetProps> = ({ userI
 
     return (
         <div className="p-4" style={{ background: 'transparent' }}>
-            <h2 className="text-2xl font-bold mb-4">Book an Appointment</h2>
-            <DateSelector onSelectDate={handleDateSelect} selectedDate={selectedDate} />
-            {selectedDate && (
-                <TimeSelector
-                    selectedDate={selectedDate}
-                    onSelectTime={handleTimeSelect}
-                    userId={userId}
-                    apiKey={apiKey}
-                    selectedTime={selectedTime}
-                />
-            )}
-            {selectedDate && selectedTime && <div>
-                <input className="input input-bordered w-full max-w-xs mb-4 mr-4" type="text" placeholder="Email" onChange={handleCustomerEmailChange} />
-                {/* <input type="text" placeholder="First Name" onChange={handleCustomerFirstNameChange} />
-                <input type="text" placeholder="Last Name" onChange={handleCustomerLastNameChange} />
-                <input type="text" placeholder="City" onChange={handleCityChange} />
-                <input type="text" placeholder="State" onChange={handleStateChange} />
-                <input type="text" placeholder="Address" onChange={handleAddressChange} /> */}
-                <input className="input input-bordered w-full max-w-xs mb-4" type="text" placeholder="What do you need help with?" onChange={handleDescriptionChange} />
-            </div>}
-            {selectedDate && selectedTime && customerEmail && (
-                <SubmitButton onSubmit={handleSubmit} />
-            )}
-            {fetcher.data && (
-                <div className="mt-4">
-                    {fetcher.data.success ? (
-                        <p className="text-success">Booking created successfully!</p>
-                    ) : (
-                        <p className="text-error">{(fetcher.data?.error as string) || "An error occurred"}</p>
+            {error ? (
+                <div className="alert alert-error">
+                    <h3 className="font-bold">Error</h3>
+                    <p>{error}</p>
+                    {error.includes('usage limit') && (
+                        <a
+                            href={`${process.env.APP_URL}/payment`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn btn-sm btn-primary mt-2"
+                        >
+                            Upgrade Plan
+                        </a>
+                    )}
+                    {error.includes('subscription') && (
+                        <a
+                            href={`${process.env.APP_URL}/payment`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn btn-sm btn-primary mt-2"
+                        >
+                            Renew Subscription
+                        </a>
                     )}
                 </div>
+            ) : (
+                <>
+                    <h2 className="text-2xl font-bold mb-4">Book an Appointment</h2>
+                    <DateSelector onSelectDate={handleDateSelect} selectedDate={selectedDate} />
+                    {selectedDate && (
+                        <TimeSelector
+                            selectedDate={selectedDate}
+                            onSelectTime={handleTimeSelect}
+                            userId={userId}
+                            apiKey={apiKey}
+                            selectedTime={selectedTime}
+                        />
+                    )}
+                    {selectedDate && selectedTime && <div>
+                        <input className="input input-bordered w-full max-w-xs mb-4 mr-4" type="text" placeholder="Email" onChange={handleCustomerEmailChange} />
+                        {/* <input type="text" placeholder="First Name" onChange={handleCustomerFirstNameChange} />
+                        <input type="text" placeholder="Last Name" onChange={handleCustomerLastNameChange} />
+                        <input type="text" placeholder="City" onChange={handleCityChange} />
+                        <input type="text" placeholder="State" onChange={handleStateChange} />
+                        <input type="text" placeholder="Address" onChange={handleAddressChange} /> */}
+                        <input className="input input-bordered w-full max-w-xs mb-4" type="text" placeholder="What do you need help with?" onChange={handleDescriptionChange} />
+                    </div>}
+                    {selectedDate && selectedTime && customerEmail && (
+                        <SubmitButton onSubmit={handleSubmit} />
+                    )}
+                    {fetcher.data && (
+                        <div className="mt-4">
+                            {fetcher.data.success ? (
+                                <p className="text-success">Booking created successfully!</p>
+                            ) : (
+                                <p className="text-error">{(fetcher.data?.error as string) || "An error occurred"}</p>
+                            )}
+                        </div>
+                    )}
+                </>
             )}
         </div>
     );
