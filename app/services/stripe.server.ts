@@ -32,6 +32,10 @@ export async function createCheckoutSession(priceId: string, userId: string) {
         mode: 'subscription',
         success_url: `${process.env.APP_URL}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${process.env.APP_URL}/payment`,
+        metadata: {
+            userId,
+            priceId,
+        },
     });
 
     return session;
@@ -51,6 +55,6 @@ export async function getActiveSubscription(stripeCustomerId: string | null) {
 
 export async function getCheckoutSession(sessionId: string) {
     return stripe.checkout.sessions.retrieve(sessionId, {
-        expand: ['line_items'],
+        expand: ['line_items', 'line_items.data.price', 'customer'],
     });
 }

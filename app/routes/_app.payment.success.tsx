@@ -20,21 +20,28 @@ export const loader: LoaderFunction = async ({ request }) => {
     }
 
     try {
+        console.log('Processing payment success for session:', sessionId);
         const session = await getCheckoutSession(sessionId);
-        const user = await getUserById(userId);
+        console.log('Stripe session:', session);
 
+        const user = await getUserById(userId);
         if (!user) {
             throw new Error('User not found');
         }
 
-        if (session.status === 'complete') {
+        if (session.status === 'complete' || session.payment_status === 'paid') {
             // Determine the tier based on the price ID
             let tier = 'basic';
-            if (session.line_items?.data[0]?.price?.id === 'price_YYYYY') {
+            const priceId = session.line_items?.data[0]?.price?.id;
+            console.log('Price ID:', priceId);
+
+            if (priceId === 'price_1Q6PpBQaM3W31xcMGQJRM95z') {
                 tier = 'pro';
-            } else if (session.line_items?.data[0]?.price?.id === 'price_ZZZZZ') {
+            } else if (priceId === 'price_1Q6Pq3QaM3W31xcMY17mpR72') {
                 tier = 'ultimate';
             }
+
+            console.log('Upgrading user to tier:', tier);
 
             // Generate API key if not exists
             const apiKey = user.apiKey || generateApiKey();
@@ -47,11 +54,14 @@ export const loader: LoaderFunction = async ({ request }) => {
                 stripeCustomerId: session.customer as string,
             });
 
+            console.log('User updated successfully');
+
             return json<LoaderData>({
                 success: true,
                 message: `Successfully upgraded to ${tier} plan!`,
             });
         } else {
+            console.log('Payment not completed. Session status:', session.status);
             return json<LoaderData>({
                 success: false,
                 message: 'Payment was not completed.',
