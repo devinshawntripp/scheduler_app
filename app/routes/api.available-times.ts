@@ -13,9 +13,13 @@ export const loader: LoaderFunction = async ({ request }) => {
         return json({ error: 'Missing required parameters' }, { status: 400 });
     }
 
-    const isValidApiKey = await validateApiKey(apiKey);
-    if (!isValidApiKey) {
-        return json({ error: 'Invalid API key' }, { status: 401 });
+    try {
+        await validateApiKey(apiKey);
+    } catch (error) {
+        if (error instanceof Error) {
+            return json({ error: error.message }, { status: 403 });
+        }
+        return json({ error: 'An unknown error occurred validating your API key' }, { status: 403 });
     }
 
     try {
