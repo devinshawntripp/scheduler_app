@@ -46,12 +46,21 @@ export const loader: LoaderFunction = async ({ request }) => {
             // Generate API key if not exists
             const apiKey = user.apiKey || generateApiKey();
 
+            // Get just the customer ID string
+            const stripeCustomerId = typeof session.customer === 'string'
+                ? session.customer
+                : session.customer?.id;
+
+            if (!stripeCustomerId) {
+                throw new Error('No customer ID found in session');
+            }
+
             // Update user with new tier, active subscription, and API key
             await updateUser(userId, {
                 tier,
                 activeSubscription: true,
                 apiKey,
-                stripeCustomerId: session.customer as string,
+                stripeCustomerId,
             });
 
             console.log('User updated successfully');
