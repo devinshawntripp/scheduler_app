@@ -71,9 +71,9 @@ const EmbeddableBookingWidget: React.FC<EmbeddableBookingWidgetProps> = ({ userI
     };
 
     return (
-        <div className="p-4" style={{ background: 'transparent' }}>
+        <div className="p-4" style={{ background: 'transparent', backdropFilter: 'none' }}>
             {error ? (
-                <div className="alert alert-error">
+                <div className="alert alert-error bg-opacity-90">
                     <h3 className="font-bold">Error</h3>
                     <p>{error}</p>
                     {error.includes('usage limit') && (
@@ -100,37 +100,46 @@ const EmbeddableBookingWidget: React.FC<EmbeddableBookingWidgetProps> = ({ userI
             ) : (
                 <>
                     <h2 className="text-2xl font-bold mb-4">Book an Appointment</h2>
-                    <DateSelector onSelectDate={handleDateSelect} selectedDate={selectedDate} />
-                    {selectedDate && (
-                        <TimeSelector
-                            selectedDate={selectedDate}
-                            onSelectTime={handleTimeSelect}
-                            userId={userId}
-                            apiKey={apiKey}
-                            selectedTime={selectedTime}
-                        />
-                    )}
-                    {selectedDate && selectedTime && <div>
-                        <input className="input input-bordered w-full max-w-xs mb-4 mr-4" type="text" placeholder="Email" onChange={handleCustomerEmailChange} />
-                        {/* <input type="text" placeholder="First Name" onChange={handleCustomerFirstNameChange} />
-                        <input type="text" placeholder="Last Name" onChange={handleCustomerLastNameChange} />
-                        <input type="text" placeholder="City" onChange={handleCityChange} />
-                        <input type="text" placeholder="State" onChange={handleStateChange} />
-                        <input type="text" placeholder="Address" onChange={handleAddressChange} /> */}
-                        <input className="input input-bordered w-full max-w-xs mb-4" type="text" placeholder="What do you need help with?" onChange={handleDescriptionChange} />
-                    </div>}
-                    {selectedDate && selectedTime && customerEmail && (
-                        <SubmitButton onSubmit={handleSubmit} />
-                    )}
-                    {fetcher.data && (
-                        <div className="mt-4">
-                            {fetcher.data.success ? (
-                                <p className="text-success">Booking created successfully!</p>
-                            ) : (
-                                <p className="text-error">{(fetcher.data?.error as string) || "An error occurred"}</p>
-                            )}
-                        </div>
-                    )}
+                    <div className="bg-transparent">
+                        <DateSelector onSelectDate={handleDateSelect} selectedDate={selectedDate} />
+                        {selectedDate && (
+                            <TimeSelector
+                                selectedDate={selectedDate}
+                                onSelectTime={handleTimeSelect}
+                                userId={userId}
+                                apiKey={apiKey}
+                                selectedTime={selectedTime}
+                            />
+                        )}
+                        {selectedDate && selectedTime && (
+                            <div className="bg-transparent">
+                                <input
+                                    className="input input-bordered w-full max-w-xs mb-4 mr-4 bg-opacity-50"
+                                    type="text"
+                                    placeholder="Email"
+                                    onChange={handleCustomerEmailChange}
+                                />
+                                <input
+                                    className="input input-bordered w-full max-w-xs mb-4 bg-opacity-50"
+                                    type="text"
+                                    placeholder="What do you need help with?"
+                                    onChange={handleDescriptionChange}
+                                />
+                            </div>
+                        )}
+                        {selectedDate && selectedTime && customerEmail && (
+                            <SubmitButton onSubmit={handleSubmit} />
+                        )}
+                        {fetcher.data && (
+                            <div className="mt-4">
+                                {fetcher.data.success ? (
+                                    <p className="text-success">Booking created successfully!</p>
+                                ) : (
+                                    <p className="text-error">{(fetcher.data?.error as string) || "An error occurred"}</p>
+                                )}
+                            </div>
+                        )}
+                    </div>
                 </>
             )}
         </div>

@@ -96,8 +96,17 @@ export default function EmbeddableScheduler() {
                     margin: 0;
                     padding: 0;
                 }
+                .bg-transparent {
+                    background: transparent !important;
+                }
+                .bg-opacity-50 {
+                    background-opacity: 0.5;
+                }
+                .alert {
+                    background-opacity: 0.9;
+                }
             `}</style>
-            <div style={{ background: 'transparent' }}>
+            <div className="bg-transparent">
                 {error ? (
                     <div className="p-4 text-center">
                         <div className="alert alert-error">
