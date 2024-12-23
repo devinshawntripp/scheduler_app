@@ -1,5 +1,5 @@
 # Use an official Node runtime as the base image
-FROM node:20-alpine
+FROM node:20.10-alpine
 
 # Install netcat-openbsd for 'nc' command (required for 'nc' in entrypoint.sh)
 RUN apk add --no-cache netcat-openbsd
@@ -9,6 +9,8 @@ WORKDIR /app
 
 # Copy package.json and package-lock.json
 COPY package*.json ./
+
+RUN  rm -rf node_modules && rm -rf .cache && npm cache clean --force
 
 # Install dependencies
 RUN npm ci
