@@ -8,13 +8,14 @@ import {
   useLoaderData,
   useRouteError,
   useSearchParams,
+  useLocation,
 } from "@remix-run/react";
 import type { LinksFunction, LoaderFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import Layout from "./components/Layout/Layout";
 import { getUserById } from "./services/user.server";
 import { AuthProvider } from "./context/AuthContext";
-import { requireUserId } from "./utils/auth.server";
+import { requireUserId, getUserId } from "./utils/auth.server";
 import { ExtendedUser } from "./models";
 import { rehydrateExtendedUser } from "./utils/rehydrateUser";
 
@@ -26,15 +27,26 @@ export const loader: LoaderFunction = async ({ request }) => {
   const url = new URL(request.url);
   const isEmbedded = url.searchParams.get("embedded") === "true";
 
+  // Add a list of public routes that should not require authentication.
+  const publicRoutes = ["/login", "/register"];
+
   if (isEmbedded) {
     return json({});
   }
+
+  // If the current pathname is public, do not enforce authentication.
+  if (publicRoutes.includes(url.pathname)) {
+    return json({
+      user: null,
+      ENV: { APP_TIME_ZONE: process.env.APP_TIME_ZONE || "America/Chicago" },
+    });
+  }
+
   const userId = await requireUserId(request);
   const user = await getUserById(userId);
   return json({
-    user, ENV: {
-      APP_TIME_ZONE: process.env.APP_TIME_ZONE || 'America/Chicago',
-    }
+    user,
+    ENV: { APP_TIME_ZONE: process.env.APP_TIME_ZONE || "America/Chicago" },
   });
 };
 
@@ -44,10 +56,13 @@ export default function App() {
   // const loaderData = useLoaderData<{ user?: ExtendedUser }>();
   const [searchParams] = useSearchParams();
   const isEmbedded = searchParams.get("embedded") === "true";
+  const location = useLocation();
 
   // Use the rehydrateExtendedUser helper if a user is present.
   const user: ExtendedUser | null =
     isEmbedded || !data.user ? null : rehydrateExtendedUser(data.user);
+  const noLayoutRoutes = ["/login", "/register"];
+  const isNoLayout = noLayoutRoutes.includes(location.pathname);
 
   return (
     <html lang="en" className={isEmbedded ? '' : 'h-full dark'}>
@@ -58,10 +73,8 @@ export default function App() {
         <Links />
       </head>
       <body className={isEmbedded ? 'bg-transparent' : 'h-full bg-base-200'}>
-        <AuthProvider user={user}>
-          <Layout user={user}>
-            <Outlet />
-          </Layout>
+        <AuthProvider user={data.user}>
+          {isNoLayout ? <Outlet /> : <Layout user={data.user}><Outlet /></Layout>}
         </AuthProvider>
         <ScrollRestoration />
         <Scripts />
@@ -77,13 +90,10 @@ export default function App() {
 
 export function ErrorBoundary() {
   const error = useRouteError();
-  // const data = useLoaderData<typeof loader>();
-  // // Pass the user from loaderData (or null when in embed mode)
-  // const [searchParams] = useSearchParams();
-  // const isEmbedded = searchParams.get("embedded") === "true";
+  const location = useLocation();
 
-  // const user: ExtendedUser | null =
-  //   isEmbedded || !data.user ? null : rehydrateExtendedUser(data.user);
+  const noLayoutRoutes = ["/login", "/register"];
+  const isNoLayout = noLayoutRoutes.includes(location.pathname);
 
   let errorContent;
   if (isRouteErrorResponse(error)) {

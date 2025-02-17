@@ -7,14 +7,14 @@ import { loadSlim } from "tsparticles-slim";
 import type { Engine } from "tsparticles-engine";
 import { ClientOnly } from "~/components/ClientOnly";
 
-export const loader: LoaderFunction = async ({ request }) => {
-  const userId = await getUserId(request);
-  if (userId) return redirect("/dashboard");
-  
-  const url = new URL(request.url);
-  const redirectTo = url.searchParams.get("redirectTo") || "/dashboard";
-  return json({ redirectTo });
-};
+// export const loader: LoaderFunction = async ({ request }) => {
+//   // const userId = await getUserId(request);
+//   // if (userId) return redirect("/dashboard");
+
+//   const url = new URL(request.url);
+//   const redirectTo = url.searchParams.get("redirectTo") || "/dashboard";
+//   return json({ redirectTo });
+// };
 
 export const action: ActionFunction = async ({ request }) => {
   const form = await request.formData();
