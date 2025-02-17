@@ -55,6 +55,19 @@ export default function Layout({ children, user }: LayoutProps) {
         <main className="flex-grow p-4 lg:p-8 overflow-y-auto">
           {children}
         </main>
+        <footer className="p-4 text-center border-t border-gray-200">
+          <p className="text-sm text-gray-500">
+            &copy; {new Date().getFullYear()} Schedule Everything. All rights reserved.
+            <span className="mx-2">|</span>
+            <Link to="/privacy-policy" className="underline hover:text-gray-700">
+              Privacy Policy
+            </Link>
+            <span className="mx-2">|</span>
+            <Link to="/terms-and-conditions" className="underline hover:text-gray-700">
+              Terms &amp; Conditions
+            </Link>
+          </p>
+        </footer>
       </div>
 
       {/* Sidebar */}
