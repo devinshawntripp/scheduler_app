@@ -1,7 +1,7 @@
 import { json, LoaderFunction, ActionFunction } from '@remix-run/node';
 import { useLoaderData, useActionData, Form, Link } from '@remix-run/react';
 import { requireRole } from '~/utils/auth.server';
-import { getAllUsers, addRoleToUser, removeRoleFromUser, getAllRoles, addNewRole, removeUser } from '~/models/user.server';
+import { getAllUsers, addRoleToUser, removeRoleFromUser, getAllRoles, addNewRole, removeUser } from '~/services/user.server';
 
 export const loader: LoaderFunction = async ({ request }) => {
   await requireRole(request, 'admin');
@@ -41,9 +41,9 @@ export const action: ActionFunction = async ({ request }) => {
 };
 
 export default function AdminDashboard() {
-  const { users, roles } = useLoaderData<{ 
-    users: Array<{ id: string, email: string, roles: Array<{ id: string, name: string }> }>, 
-    roles: Array<{ id: string, name: string }> 
+  const { users, roles } = useLoaderData<{
+    users: Array<{ id: string, email: string, roles: Array<{ id: string, name: string }> }>,
+    roles: Array<{ id: string, name: string }>
   }>();
   const actionData = useActionData<{ success?: boolean, message?: string }>();
 
@@ -62,7 +62,7 @@ export default function AdminDashboard() {
               <span>{actionData.message}</span>
             </div>
           )}
-        
+
           {/* Manage Roles Section */}
           <div className="card bg-base-100 shadow-xl mb-8">
             <div className="card-body">
@@ -186,7 +186,7 @@ export default function AdminDashboard() {
         </div>
       </div>
       <div className="drawer-side">
-        <label htmlFor="my-drawer-2" className="drawer-overlay"></label> 
+        <label htmlFor="my-drawer-2" className="drawer-overlay"></label>
         <ul className="menu p-4 w-80 h-full bg-base-200 text-base-content">
           <li><a className="text-xl font-bold mb-4">Admin Menu</a></li>
           <li><a>Dashboard</a></li>

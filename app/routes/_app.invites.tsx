@@ -1,9 +1,9 @@
-import React from 'react';
 import { json, LoaderFunction, ActionFunction } from '@remix-run/node';
 import { useLoaderData, Form } from '@remix-run/react';
 import { requireUserId } from '~/utils/auth.server';
-import { getInvitationsByTeamOwner, createInvitation } from '~/models/invite.server';
-import { getUserById } from '~/models/user.server';
+import { getInvitationsByTeamOwner, createInvitation } from '~/services/invite.server';
+import { getUserById } from '~/services/user.server';
+import { ExtendedUser, UserRole } from '~/models';
 
 type Invitation = {
   id: string;
@@ -14,9 +14,12 @@ type Invitation = {
 
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await requireUserId(request);
-  const user = await getUserById(userId);
-
-  if (user?.roles.some(role => role.name === 'team_owner')) {
+  const user: ExtendedUser | null = await getUserById(userId);
+  if (!user) {
+    throw new Response('Not Found', { status: 404 });
+  }
+  // if user is not a team owner, throw a 403 error
+  if (!user.roles.some((role: UserRole) => role.name === 'team_owner')) {
     throw new Response('Forbidden', { status: 403 });
   }
 
@@ -28,7 +31,7 @@ export const action: ActionFunction = async ({ request }) => {
   const userId = await requireUserId(request);
   const user = await getUserById(userId);
 
-  if (user?.roles.some(role => role.name !== 'team_owner')) {
+  if (!user?.roles.some(role => role.name === 'team_owner')) {
     throw new Response('Forbidden', { status: 403 });
   }
 

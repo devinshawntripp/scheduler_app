@@ -1,6 +1,6 @@
 import { json, ActionFunction } from "@remix-run/node";
 import { requireUserId } from "~/services/auth.server";
-import { updateUserGoogleCalendar } from "~/models/user.server";
+import { updateUserGoogleCalendar } from "~/services/user.server";
 
 export const action: ActionFunction = async ({ request }) => {
   const userId = await requireUserId(request);

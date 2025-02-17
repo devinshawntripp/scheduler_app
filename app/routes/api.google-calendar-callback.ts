@@ -1,6 +1,6 @@
 import { LoaderFunction, redirect } from '@remix-run/node';
 import { google } from 'googleapis';
-import { updateUserGoogleCalendar } from '~/models/user.server';
+import { updateUserGoogleCalendar } from '~/services/user.server';
 
 const oauth2Client = new google.auth.OAuth2(
     process.env.GOOGLE_CLIENT_ID,

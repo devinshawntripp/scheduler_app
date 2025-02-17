@@ -1,7 +1,7 @@
 import { json, LoaderFunction, ActionFunction, redirect } from '@remix-run/node';
 import { useLoaderData, Form } from '@remix-run/react';
 import { requireUserId } from '~/utils/auth.server';
-import { getUserById } from '~/models/user.server';
+import { getUserById } from '~/services/user.server';
 import { createCheckoutSession, getActiveSubscription } from '~/services/stripe.server';
 import { FaCheck } from 'react-icons/fa';
 

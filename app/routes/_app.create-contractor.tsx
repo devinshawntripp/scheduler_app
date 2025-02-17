@@ -1,7 +1,7 @@
 import { json, redirect, type ActionFunction, LoaderFunction } from "@remix-run/node";
 import { Form, useActionData, useNavigation, useLoaderData } from "@remix-run/react";
-import { createUser } from "~/models/user.server";
-import { inviteContractor } from "~/models/invite.server";
+import { createUser } from "~/services/user.server";
+import { inviteContractor } from "~/services/invite.server";
 import { requireUserId, isUserAdmin } from "~/utils/auth.server";
 import { useState, useCallback, useEffect } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
@@ -21,7 +21,7 @@ export const loader: LoaderFunction = async ({ request }) => {
 
 export const action: ActionFunction = async ({ request }) => {
   console.log("Create contractor action started");
-  
+
   try {
     const userId = await requireUserId(request);
     console.log("User ID:", userId);

@@ -1,6 +1,6 @@
 import { ActionFunction, LoaderFunction, redirect } from '@remix-run/node';
 import { google } from 'googleapis';
-import { getUserById, updateUserGoogleCalendar } from '~/models/user.server';
+import { getUserById, updateUserGoogleCalendar } from '~/services/user.server';
 import { requireUserId } from '~/utils/auth.server';
 
 const SCOPES = ['https://www.googleapis.com/auth/calendar.readonly'];

@@ -1,6 +1,6 @@
 import { json, LoaderFunction, ActionFunction } from "@remix-run/node";
 import { requireUserId } from "~/utils/auth.server";
-import { createBooking } from "~/models/booking.server";
+import { createBooking } from "~/services/booking.server";
 
 export const loader: LoaderFunction = async ({ request }) => {
   return json({ message: "Bookings API" });

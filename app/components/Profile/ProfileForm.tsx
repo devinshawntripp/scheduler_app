@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Form, useNavigation, useFetcher } from '@remix-run/react';
 import type { calendar_v3 } from 'googleapis';
-import type { ExtendedUser } from '~/types';
+import type { ExtendedUser } from '~/models';
 
 interface User {
   id: string;

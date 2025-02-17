@@ -1,7 +1,7 @@
 import { ActionFunction, json, LoaderFunction, redirect } from "@remix-run/node";
 import { Form, useActionData, useLoaderData, Link } from "@remix-run/react";
 import { createUser, getUserId, createUserSession } from "~/utils/auth.server";
-import { getAllRoles } from "~/models/user.server";
+import { getAllRoles } from "~/services/user.server";
 import { useCallback, useState, useEffect } from "react";
 import { Particles } from "react-tsparticles";
 import { loadSlim } from "tsparticles-slim";

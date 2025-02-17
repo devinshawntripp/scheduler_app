@@ -1,10 +1,10 @@
 import { json, LoaderFunction, ActionFunction, redirect } from '@remix-run/node';
 import { useLoaderData, Form, Link, useNavigate, Outlet, useActionData, useFetcher } from '@remix-run/react';
 import { requireUserId } from '~/utils/auth.server';
-import { getUserById } from '~/models/user.server';
+import { getUserById } from '~/services/user.server';
 import TeamOwnerDashboard from '~/components/Dashboard/TeamOwnerDashboard';
 import ProfileForm from '~/components/Profile/ProfileForm';
-import type { ExtendedUser, ExtendedBooking } from '~/types';
+import type { ExtendedUser, ExtendedBooking } from '~/models';
 import { useState, useEffect } from 'react';
 import { prisma } from "~/db.server";
 import { motion } from 'framer-motion';

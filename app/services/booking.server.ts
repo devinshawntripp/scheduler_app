@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { sendEmailNotification } from "../utils/email";
-import type { ExtendedBooking } from "../types";
+import type { ExtendedBooking } from "../models";
 import { prisma } from "~/db.server";
 
 const prisma = new PrismaClient();

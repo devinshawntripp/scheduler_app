@@ -3,7 +3,7 @@ import { Form, useActionData } from '@remix-run/react';
 import { requireUserId } from '../utils/auth.server';
 import { prisma } from '~/db.server';
 import { sendInvitationEmail } from '~/utils/email.server';
-import { getAllUserRoles } from '~/models/user.server';
+import { getAllUserRoles } from '~/services/user.server';
 
 export const action: ActionFunction = async ({ request }) => {
   const userId = await requireUserId(request);

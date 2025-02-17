@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import type { ExtendedEvent } from "~/types";
+import type { ExtendedEvent } from "~/models";
 
 const prisma = new PrismaClient();
 

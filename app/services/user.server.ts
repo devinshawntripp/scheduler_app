@@ -1,6 +1,6 @@
-import { PrismaClient, Prisma } from "@prisma/client";
+import { PrismaClient, Prisma, User } from "@prisma/client";
 import bcrypt from "bcryptjs";
-import type { ExtendedUser } from "~/types";
+import type { ExtendedUser } from "~/models";
 import { prisma } from "~/db.server";
 import { generateApiKey } from '~/utils/apiKey.server';
 
@@ -30,7 +30,31 @@ export async function createUser(email: string, password: string, roles: string[
       include: { roles: true }
     });
     console.log("User created:", user);
-    return user;
+    const availabilities = [
+      1, 2, 3, 4, 5, 6, 7
+    ];
+
+    // update availability for the user
+    await prisma.availability.createMany({
+      data: availabilities.map(a => ({
+        userId: user.id,
+        dayOfWeek: a,
+        startTime: "09:00",
+        endTime: "17:00",
+      })),
+    });
+
+    // Check if teamOwnerId is null and if the user has the "team_owner" role
+    let finalUser = user;
+    if (user.teamOwnerId === null && user.roles.some(role => role.name === "team_owner")) {
+      finalUser = await prisma.user.update({
+        where: { id: user.id },
+        data: { teamOwnerId: user.id },
+        include: { roles: true } // Include roles again in case you need them
+      });
+    }
+
+    return finalUser;
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === 'P2002') {
@@ -42,8 +66,15 @@ export async function createUser(email: string, password: string, roles: string[
   }
 }
 
+export async function addTeamOwnerIdToUser(userId: string, teamOwnerId: string) {
+  return prisma.user.update({
+    where: { id: userId },
+    data: { teamOwnerId: teamOwnerId },
+  });
+}
+
 export async function getUserByEmail(email: string): Promise<ExtendedUser | null> {
-  return prisma.user.findUnique({ where: { email } });
+  return prisma.user.findUnique({ where: { email }, include: { roles: true } });
 }
 
 export async function getEmailById(id: string): Promise<string | null> {
@@ -92,15 +123,9 @@ export async function getTeamMembers(teamOwnerId: string) {
   console.log('Fetching team members for teamOwnerId:', teamOwnerId);
   const members = await prisma.user.findMany({
     where: { teamOwnerId },
-    select: {
-      id: true,
-      email: true,
-      roles: {
-        select: {
-          name: true
-        }
-      }
-    },
+    include: {
+      roles: true,
+    }
   });
   console.log('Found team members:', members);
   return members;
@@ -335,3 +360,29 @@ export async function getRole(roleName: string) {
   return prisma.userRole.findUnique({ where: { name: roleName } });
 }
 
+export async function updateUserTimeZone(userId: string, timeZone: string) {
+  return prisma.user.update({
+    where: { id: userId },
+    data: { timeZone },
+  });
+}
+
+//remove user from team
+export async function removeUserFromTeam(userId: string) {
+  return prisma.user.update({
+    where: { id: userId },
+    data: { teamOwnerId: null },
+  });
+}
+
+//add user to team
+export async function addUserToTeam(email: string, teamOwnerId: string) {
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (!user) {
+    throw new Error(`User with email ${email} not found`);
+  }
+  return prisma.user.update({
+    where: { id: user.id },
+    data: { teamOwnerId },
+  });
+}

@@ -1,8 +1,8 @@
 import { useLoaderData, useFetcher } from '@remix-run/react';
 import { json, LoaderFunction } from '@remix-run/node';
 import { requireUserId } from '~/utils/auth.server';
-import { getInvitations } from '~/models/invite.server';
-import { getEmailById } from '~/models/user.server';
+import { getInvitations } from '~/services/invite.server';
+import { getEmailById } from '~/services/user.server';
 
 export const loader: LoaderFunction = async ({ request }) => {
   try {

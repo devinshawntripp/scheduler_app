@@ -1,7 +1,7 @@
 import { json } from "@remix-run/node";
 import type { ActionFunction } from "@remix-run/node";
 import { requireUserId } from "~/utils/auth.server";
-import { inviteContractor } from "~/models/invite.server";
+import { inviteContractor } from "~/services/invite.server";
 
 export const action: ActionFunction = async ({ request }) => {
   const userId = await requireUserId(request);

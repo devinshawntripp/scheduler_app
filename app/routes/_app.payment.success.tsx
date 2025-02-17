@@ -1,7 +1,7 @@
 import { json, LoaderFunction, redirect } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
 import { getCheckoutSession } from '~/services/stripe.server';
-import { getUserById, updateUser } from '~/models/user.server';
+import { getUserById, updateUser } from '~/services/user.server';
 import { generateApiKey } from '~/utils/apiKey.server';
 import { requireUserId } from '~/utils/auth.server';
 

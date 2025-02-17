@@ -1,6 +1,6 @@
 import { ActionFunction, json } from '@remix-run/node';
 import { requireUserId } from '~/utils/auth.server';
-import { updateAllAvailabilities, getAvailabilityForUser } from '~/models/availability.server';
+import { updateAllAvailabilities, getAvailabilityForUser } from '~/services/availability.server';
 
 export const action: ActionFunction = async ({ request }) => {
     const userId = await requireUserId(request);

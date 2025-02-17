@@ -1,5 +1,5 @@
 import { json, ActionFunction } from "@remix-run/node";
-import { createUser } from "~/models/user.server";
+import { createUser } from "~/services/user.server";
 import { requireUserId } from "~/utils/auth.server";
 
 export const action: ActionFunction = async ({ request }) => {

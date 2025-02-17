@@ -1,4 +1,4 @@
-import { ExtendedBooking } from '~/types';
+import { ExtendedBooking } from '~/models';
 
 export function detectConflicts(newBooking: ExtendedBooking, existingBookings: ExtendedBooking[]): ExtendedBooking[] {
   return existingBookings.filter(booking => {

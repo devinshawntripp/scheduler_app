@@ -1,13 +1,13 @@
 import { json, LoaderFunction } from "@remix-run/node";
 import { requireUserId } from "~/utils/auth.server";
-import { getBookingsByContractorId } from "~/models/booking.server";
+import { getBookingsByContractorId } from "~/services/booking.server";
 import { formatInTimeZone } from 'date-fns-tz';
 import { APP_TIME_ZONE } from '~/config/app-config';
 
 export const loader: LoaderFunction = async ({ request }) => {
   try {
     await requireUserId(request);
-    
+
     const url = new URL(request.url);
     const userId = url.searchParams.get("userId");
 

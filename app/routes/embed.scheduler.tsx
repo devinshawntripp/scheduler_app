@@ -1,7 +1,7 @@
 import { json, LoaderFunction } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
 import { validateApiKey } from '~/utils/apiKey.server';
-import { getAllowedDomains } from '~/models/user.server';
+import { getAllowedDomains } from '~/services/user.server';
 import EmbeddableBookingWidget from '~/components/EmbeddableBookingWidget/EmbeddableBookingWidget';
 
 export const loader: LoaderFunction = async ({ request }) => {

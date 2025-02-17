@@ -6,6 +6,8 @@ import interactionPlugin from '@fullcalendar/interaction';
 import listPlugin from '@fullcalendar/list';
 import { useFetcher } from '@remix-run/react';
 import { APP_TIME_ZONE } from '~/config/app-config';
+import { formatInTimeZone } from 'date-fns-tz';
+import { Event } from '@prisma/client';
 
 interface CalendarProps {
   userId: string;
@@ -16,9 +18,10 @@ interface CalendarProps {
     end: string;
     userId: string;
   }>;
+  timeZone: string;
 }
 
-const Calendar: React.FC<CalendarProps> = React.memo(({ userId, events: propEvents }) => {
+const Calendar: React.FC<CalendarProps> = React.memo(({ userId, events: propEvents, timeZone }) => {
   const fetcher = useFetcher();
   const [events, setEvents] = useState(propEvents || []);
   const [isMobile, setIsMobile] = useState(false);
@@ -50,9 +53,10 @@ const Calendar: React.FC<CalendarProps> = React.memo(({ userId, events: propEven
   }, [fetcher.data, propEvents]);
 
   const handleDateSelect = (selectInfo: any) => {
+    console.log('selectInfo', selectInfo);
     setSelectedSlot({
-      start: selectInfo.start,
-      end: selectInfo.end,
+      start: selectInfo.startStr,
+      end: selectInfo.endStr,
     });
   };
 
@@ -82,7 +86,7 @@ const Calendar: React.FC<CalendarProps> = React.memo(({ userId, events: propEven
     slotMinTime: '00:00:00',
     slotMaxTime: '24:00:00',
     events: events,
-    timeZone: APP_TIME_ZONE,
+    timeZone: timeZone,
     eventContent: (arg: any) => {
       return (
         <>
@@ -97,7 +101,7 @@ const Calendar: React.FC<CalendarProps> = React.memo(({ userId, events: propEven
     stickyHeaderDates: false,
     selectable: true,
     select: handleDateSelect,
-  }), [events, isMobile]);
+  }), [events, isMobile, timeZone]);
 
   const mobileStyles = `
     @media (max-width: 767px) {
@@ -126,10 +130,16 @@ const Calendar: React.FC<CalendarProps> = React.memo(({ userId, events: propEven
       {selectedSlot && (
         <div className="appointment-form">
           <h3>Book Appointment</h3>
-          <p>Start: {selectedSlot.start.toLocaleString()}</p>
-          <p>End: {selectedSlot.end.toLocaleString()}</p>
-          <button onClick={handleBookAppointment}>Book</button>
-          <button onClick={() => setSelectedSlot(null)}>Cancel</button>
+          <p>
+            Start: {formatInTimeZone(selectedSlot.start, timeZone, 'yyyy-MM-dd hh:mm a z')}
+          </p>
+          <p>
+            End: {formatInTimeZone(selectedSlot.end, timeZone, 'yyyy-MM-dd hh:mm a z')}
+          </p>
+          <div className="flex gap-2">
+            <button className="btn btn-primary" onClick={handleBookAppointment}>Book</button>
+            <button className="btn btn-secondary" onClick={() => setSelectedSlot(null)}>Cancel</button>
+          </div>
         </div>
       )}
     </div>

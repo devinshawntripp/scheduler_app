@@ -14,11 +14,12 @@ declare module '@fullcalendar/react' {
     selectable?: boolean;
     select?: (arg: any) => void;
     eventClick?: (arg: any) => void;
+    timeZone?: string;
   }
 
-  export default class FullCalendar extends React.Component<FullCalendarProps> {}
+  export default class FullCalendar extends React.Component<FullCalendarProps> { }
 }
 
-declare module '@fullcalendar/daygrid' {}
-declare module '@fullcalendar/timegrid' {}
-declare module '@fullcalendar/interaction' {}
+declare module '@fullcalendar/daygrid' { }
+declare module '@fullcalendar/timegrid' { }
+declare module '@fullcalendar/interaction' { }

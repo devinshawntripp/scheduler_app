@@ -2,7 +2,7 @@ import { ActionFunction, json } from "@remix-run/node";
 import { prisma } from "~/db.server";
 import { incrementUsage } from "~/utils/auth.server";
 import { validateApiKey } from "~/utils/apiKey.server";
-import { getUserById, getAllowedDomains } from "~/models/user.server";
+import { getUserById, getAllowedDomains } from "~/services/user.server";
 import { google } from 'googleapis';
 import { sendEmailNotification } from "~/utils/email";
 

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { json, LoaderFunction } from '@remix-run/node';
 import { useLoaderData, Link } from '@remix-run/react';
 import { requireUserId } from '~/utils/auth.server';
-import { getUserById, getAllowedDomains, getDomainLimitByTier } from '~/models/user.server';
+import { getUserById, getAllowedDomains, getDomainLimitByTier } from '~/services/user.server';
 import { FaCopy } from 'react-icons/fa';
 import AllowedDomains from '~/components/AllowedDomains';
 import Layout from '~/components/Layout/Layout';  // Import the Layout component
@@ -94,5 +94,5 @@ export default function EmbedCode() {
     );
 
     // Wrap the content with the Layout component
-    return <Layout>{content}</Layout>;
+    return <div>{content}</div>;
 }

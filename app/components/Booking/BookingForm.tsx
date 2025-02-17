@@ -9,7 +9,7 @@ import {
   useSubmit,
 } from '@remix-run/react';
 import Calendar from '../Calendar/Calendar';
-import { ExtendedUser } from '~/types';
+import { ExtendedUser } from '~/models';
 import { format, parseISO } from 'date-fns';
 import { formatInTimeZone } from 'date-fns-tz';
 import { APP_TIME_ZONE } from '~/config/app-config';
@@ -138,7 +138,7 @@ function BookingFormContent({ teamOwnerId }: BookingFormProps) {
   // const handleCreateContractor = async (event: React.FormEvent<HTMLFormElement>) => {
   //   event.preventDefault();
   //   const formData = new FormData(event.currentTarget);
-    
+
   //   try {
   //     const response = await fetch('/api/create-contractor', {
   //       method: 'POST',
@@ -347,14 +347,14 @@ function BookingFormContent({ teamOwnerId }: BookingFormProps) {
           >
             {submissionStatus === 'loading' ? 'Booking...' : 'Book Appointment'}
           </button>
-          
+
           {submissionStatus === 'success' && (
             <div className="alert alert-success mt-2">{submissionMessage}</div>
           )}
           {submissionStatus === 'error' && (
             <div className="alert alert-error mt-2">{submissionMessage}</div>
           )}
-          
+
           {selectedContractor && (
             <div className="mt-6">
               <h3 className="text-lg font-semibold mb-2">

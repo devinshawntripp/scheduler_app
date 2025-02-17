@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useFetcher } from '@remix-run/react';
 import { FaGoogle, FaApple, FaCheckCircle } from 'react-icons/fa';
 import BookingForm from '../Booking/BookingForm';
-import type { ExtendedBooking } from '~/types';
+import type { ExtendedBooking } from '~/models';
 import { formatInTimeZone } from 'date-fns-tz';
 import { APP_TIME_ZONE } from '~/config/app-config';
 

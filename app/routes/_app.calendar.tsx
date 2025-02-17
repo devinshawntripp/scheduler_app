@@ -2,17 +2,11 @@ import React, { useState } from 'react';
 import { json, LoaderFunction } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
 import { requireUserId } from '~/utils/auth.server';
-import { getUserById, getTeamMembers, getUserRoles } from '~/models/user.server';
+import { getUserById, getTeamMembers, getUserRoles } from '~/services/user.server';
 import Calendar from '~/components/Calendar/Calendar';
-import { getEventsByUserIds } from '~/models/event.server';
+import { getEventsByUserIds } from '~/services/event.server';
 import { formatInTimeZone } from 'date-fns-tz';
-import { APP_TIME_ZONE } from '~/config/app-config';
-
-type User = {
-  id: string;
-  email: string;
-  role: string;
-};
+import { User, UserRole } from '@prisma/client';
 
 type CalendarEvent = {
   id: string;
@@ -27,12 +21,13 @@ type LoaderData = {
   currentUser: User;
   teamMembers: User[];
   events: CalendarEvent[];
-  userRoles: string[];
+  userRoles: UserRole[];
 };
 
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await requireUserId(request);
   const currentUser = await getUserById(userId);
+  console.log("Current user:", currentUser);
   const teamOwnerId = currentUser?.teamOwnerId ?? '';
   const userRoles = await getUserRoles(userId);
 
@@ -54,11 +49,11 @@ export const loader: LoaderFunction = async ({ request }) => {
     events = await getEventsByUserIds(userId);
   }
 
-  // Convert event times to the correct timezone
+  const userTimeZone = currentUser.timeZone || 'America/New_York';
   const formattedEvents = events.map(event => ({
     ...event,
-    start: formatInTimeZone(new Date(event.start), APP_TIME_ZONE, "yyyy-MM-dd'T'HH:mm:ssXXX"),
-    end: formatInTimeZone(new Date(event.end), APP_TIME_ZONE, "yyyy-MM-dd'T'HH:mm:ssXXX"),
+    start: formatInTimeZone(new Date(event.start), userTimeZone, "yyyy-MM-dd'T'HH:mm:ssXXX"),
+    end: formatInTimeZone(new Date(event.end), userTimeZone, "yyyy-MM-dd'T'HH:mm:ssXXX"),
   }));
 
   console.log("Fetched events:", formattedEvents);
@@ -72,12 +67,12 @@ export default function CalendarPage() {
     [currentUser.id, ...teamMembers.map(member => member.id)]
   );
 
-  const isTeamOwner = userRoles.some(role => role.name === 'team_owner');
-  const isManager = userRoles.some(role => role.name === 'manager');
+  const isTeamOwner = userRoles.some((role: UserRole) => role.name === 'team_owner');
+  const isManager = userRoles.some((role: UserRole) => role.name === 'manager');
 
   const toggleUserVisibility = (userId: string) => {
-    setVisibleUsers(prev => 
-      prev.includes(userId) 
+    setVisibleUsers(prev =>
+      prev.includes(userId)
         ? prev.filter(id => id !== userId)
         : [...prev, userId]
     );
@@ -88,7 +83,7 @@ export default function CalendarPage() {
   return (
     <div className="bg-base-200 min-h-screen p-6">
       <h1 className="text-3xl font-bold text-primary mb-6">Calendar</h1>
-      
+
       {(isTeamOwner || isManager) && (
         <div className="mb-4">
           <h2 className="text-xl font-semibold mb-2">Team Members</h2>
@@ -97,11 +92,10 @@ export default function CalendarPage() {
               <button
                 key={member.id}
                 onClick={() => toggleUserVisibility(member.id)}
-                className={`btn btn-sm ${
-                  visibleUsers.includes(member.id)
-                    ? 'btn-primary'
-                    : 'btn-secondary'
-                }`}
+                className={`btn btn-sm ${visibleUsers.includes(member.id)
+                  ? 'btn-primary'
+                  : 'btn-secondary'
+                  }`}
               >
                 {member.email}
               </button>
@@ -111,7 +105,7 @@ export default function CalendarPage() {
       )}
 
       <div className="bg-base-100 p-4 rounded-lg shadow-lg">
-        <Calendar userId={currentUser.id} events={filteredEvents} />
+        <Calendar userId={currentUser.id} events={filteredEvents} timeZone={currentUser.timeZone} />
       </div>
     </div>
   );

@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
 import { Link, Form, useNavigate } from '@remix-run/react';
 import { motion } from 'framer-motion';
-import { FaUser, FaBell, FaCalendar, FaBookmark, FaCog, FaSignOutAlt, FaBars, FaEnvelope, FaCode, FaVial, FaCreditCard } from 'react-icons/fa';
+import { FaUser, FaBell, FaCalendar, FaBookmark, FaCog, FaSignOutAlt, FaBars, FaEnvelope, FaCode, FaVial, FaCreditCard, FaUsers } from 'react-icons/fa';
+import { ExtendedUser } from '~/models';
 
 interface LayoutProps {
   children: React.ReactNode;
+  user: ExtendedUser | null;
 }
 
-export default function Layout({ children }: LayoutProps) {
+export default function Layout({ children, user }: LayoutProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const navigate = useNavigate();
 
   const toggleDrawer = () => {
     setDrawerOpen(!drawerOpen);
@@ -24,8 +25,13 @@ export default function Layout({ children }: LayoutProps) {
     { icon: FaBars, text: 'Dashboard', link: '/dashboard' },
     { icon: FaEnvelope, text: 'Invites', link: '/invites' },
     { icon: FaUser, text: 'Admin', link: '/admin', visible: 'admin' },
+    { icon: FaUsers, text: 'Team Management', link: '/team-management', visible: 'team_management' },
     { icon: FaVial, text: 'Embed Test', link: '/embed-test', visible: 'admin' },
-    { icon: FaCreditCard, text: 'Upgrade Plan', link: '/payment' },
+    {
+      icon: FaCreditCard,
+      text: user?.activeSubscription ? 'Upgrade Plan' : 'Subscribe Now',
+      link: '/payment'
+    },
     { icon: FaCode, text: 'Embed Code', link: '/embed-code' },
   ];
 
@@ -58,14 +64,34 @@ export default function Layout({ children }: LayoutProps) {
           <li className="mb-4">
             <h1 className="text-2xl font-bold text-primary">Scheduler</h1>
           </li>
-          {drawerItems.map((item, index) => (
-            <li key={index}>
-              <Link to={item.link} className="flex items-center p-2 hover:bg-base-200 rounded-lg transition-all duration-200" onClick={toggleDrawer}>
-                <item.icon className="mr-2" />
-                <span>{item.text}</span>
-              </Link>
-            </li>
-          ))}
+          {drawerItems
+            .filter((item) => {
+              // if the item does not have a "visible" condition, always show it.
+              if (!item.visible) return true;
+              // if user is not logged in (null), hide any restricted items.
+              if (!user) return false;
+              // For items marked "admin", show if the user has the admin role.
+              if (item.visible === 'admin') {
+                return user.roles.some((role) => role.name === 'admin');
+              }
+              // For Team Management, show if the user is an admin or team owner.
+              if (item.visible === 'team_management') {
+                return user.roles.some((role) => role.name === 'admin' || role.name === 'team_owner');
+              }
+              return false;
+            })
+            .map((item, index) => (
+              <li key={index}>
+                <Link
+                  to={item.link}
+                  className="flex items-center p-2 hover:bg-base-200 rounded-lg transition-all duration-200"
+                  onClick={toggleDrawer}
+                >
+                  <item.icon className="mr-2" />
+                  <span>{item.text}</span>
+                </Link>
+              </li>
+            ))}
           <li>
             <Form action="/logout" method="post">
               <button type="submit" className="flex items-center p-2 w-full text-left hover:bg-base-200 rounded-lg transition-all duration-200 text-error">

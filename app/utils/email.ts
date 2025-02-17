@@ -1,4 +1,4 @@
-import type { ExtendedBooking } from "~/types";
+import type { ExtendedBooking } from "~/models";
 import nodemailer from 'nodemailer';
 import { formatInTimeZone } from 'date-fns-tz';
 

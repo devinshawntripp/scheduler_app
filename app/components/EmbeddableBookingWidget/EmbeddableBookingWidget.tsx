@@ -19,7 +19,7 @@ const EmbeddableBookingWidget: React.FC<EmbeddableBookingWidgetProps> = ({ userI
     const [state, setState] = useState<string | null>(null);
     const [address, setAddress] = useState<string | null>(null);
     const [description, setDescription] = useState<string | null>(null);
-    const fetcher = useFetcher();
+    const fetcher = useFetcher<{ success: boolean, error: string }>();
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {

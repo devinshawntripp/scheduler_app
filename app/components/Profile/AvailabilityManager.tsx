@@ -23,14 +23,15 @@ export default function AvailabilityManager({ availabilities: initialAvailabilit
         })
     );
     const [editingDay, setEditingDay] = useState<number | null>(null);
-    const fetcher = useFetcher();
+    const fetcher = useFetcher<{ availabilities: Availability[] }>();
     const startTimeRefs = useRef<(HTMLInputElement | null)[]>(new Array(7).fill(null));
     const endTimeRefs = useRef<(HTMLInputElement | null)[]>(new Array(7).fill(null));
 
     useEffect(() => {
+        // const data = fetcher.data as { availabilities: Availability[] };
         if (fetcher.data && fetcher.data.availabilities) {
             setAvailabilities(daysOfWeek.map((_, index) => {
-                const updated = fetcher.data.availabilities.find((a: Availability) => a.dayOfWeek === index);
+                const updated = fetcher.data!.availabilities.find((a: Availability) => a.dayOfWeek === index);
                 return updated || availabilities[index];
             }));
         }

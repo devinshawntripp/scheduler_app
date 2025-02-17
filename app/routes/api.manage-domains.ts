@@ -1,6 +1,6 @@
 import { ActionFunction, json } from '@remix-run/node';
 import { requireUserId } from '~/utils/auth.server';
-import { addAllowedDomain, removeAllowedDomain, getAllowedDomains, getUserById } from '~/models/user.server';
+import { addAllowedDomain, removeAllowedDomain, getAllowedDomains, getUserById } from '~/services/user.server';
 
 export const action: ActionFunction = async ({ request }) => {
     const userId = await requireUserId(request);

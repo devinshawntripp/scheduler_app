@@ -1,8 +1,8 @@
 import { createCookieSessionStorage, redirect } from "@remix-run/node";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { getUserByEmail, createUser as createUserInDB, getUserById, getUserRoles } from "~/models/user.server";
-import type { UserRole } from "../models/user.server";
+import { getUserByEmail, createUser as createUserInDB, getUserById, getUserRoles } from "~/services/user.server";
+import type { UserRole } from "../services/user.server";
 import { getSession } from "~/utils/session.server"; // Update this import path
 import { prisma } from "~/db.server";
 

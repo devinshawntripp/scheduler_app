@@ -1,7 +1,7 @@
 import { LoaderFunction, redirect } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import { requireUserId } from "~/utils/auth.server";
-import { getUserById } from "~/models/user.server";
+import { getUserById } from "~/services/user.server";
 import BookingForm from "~/components/Booking/BookingForm";
 
 export const loader: LoaderFunction = async ({ request }) => {

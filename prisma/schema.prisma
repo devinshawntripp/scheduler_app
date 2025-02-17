@@ -5,6 +5,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
 model User {
@@ -33,6 +34,7 @@ model User {
   appleCalendarToken String?
   stripeCustomerId    String?         @unique
   activeSubscription  Boolean         @default(false)
+  timeZone            String          @default("America/New_York")
 }
 
 model UserRole {

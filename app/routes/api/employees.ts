@@ -1,14 +1,14 @@
 import { json } from "@remix-run/node";
 import type { LoaderFunction, ActionFunction } from "@remix-run/node";
 import { requireUserId } from "~/utils/auth.server";
-import { getEmployeesByTeamOwnerId } from "~/models/user.server";
+import { getEmployeesByTeamOwnerId } from "~/services/user.server";
 
 export const loader: LoaderFunction = async ({ request }) => {
   console.log("API route hit: /api/employees (loader)");
   try {
     const userId = await requireUserId(request);
     console.log("User ID:", userId);
-    
+
     const url = new URL(request.url);
     const teamOwnerId = url.searchParams.get("teamOwnerId");
     console.log("Team Owner ID:", teamOwnerId);

@@ -1,6 +1,6 @@
 import { ActionFunction, json } from '@remix-run/node';
 import { requireUserId } from '~/utils/auth.server';
-import { acceptInvitation, declineInvitation } from '~/models/invite.server';
+import { acceptInvitation, declineInvitation } from '~/services/invite.server';
 
 export const action: ActionFunction = async ({ request }) => {
     const userId = await requireUserId(request);

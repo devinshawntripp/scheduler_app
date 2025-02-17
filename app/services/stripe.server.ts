@@ -1,5 +1,5 @@
 import Stripe from 'stripe';
-import { getUserById, updateUser } from '~/models/user.server';
+import { getUserById, updateUser } from '~/services/user.server';
 
 if (!process.env.STRIPE_SECRET_KEY) {
     throw new Error('STRIPE_SECRET_KEY must be defined');
