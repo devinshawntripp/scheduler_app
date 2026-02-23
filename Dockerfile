@@ -16,6 +16,9 @@ RUN rm -rf node_modules && rm -rf .cache && npm cache clean --force
 # Explicitly set NODE_ENV=development here so npm ci includes devDependencies
 RUN NODE_ENV=development npm ci
 
+# Ensure local bin is on PATH so tailwindcss and other devDep binaries are found
+ENV PATH /app/node_modules/.bin:$PATH
+
 # Copy the rest of the application code
 COPY . .
 

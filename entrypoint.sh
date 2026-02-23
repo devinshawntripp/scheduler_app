@@ -1,43 +1,27 @@
 #!/bin/sh
 echo "Starting entrypoint.sh"
-# Wait for the database to be ready
-echo "Waiting for the database to be ready..."
+
+# Optionally wait for the database to be reachable before continuing.
+# Set CHECK_DB_CONNECTION=true to enable this (useful in docker-compose setups).
 if [ "$CHECK_DB_CONNECTION" = "true" ]; then
-until nc -z -v -w30 db 5432
-do
-  echo "Waiting for database connection..."
-  sleep 1
-done
+  echo "Waiting for the database to be ready..."
+  # Parse host and port from DATABASE_URL
+  # Expected format: postgresql://user:pass@host:port/dbname
+  DB_HOST=$(echo "$DATABASE_URL" | sed -E 's|.*@([^:/]+).*|\1|')
+  DB_PORT=$(echo "$DATABASE_URL" | sed -E 's|.*:([0-9]+)/[^/]*$|\1|')
+  DB_PORT=${DB_PORT:-5432}
+  until nc -z -v -w30 "$DB_HOST" "$DB_PORT"
+  do
+    echo "Waiting for database connection..."
+    sleep 1
+  done
+  echo "Database is up and running!"
 fi
-echo "Database is up and running!"
 
-# First try to deploy migrations
+# Deploy migrations
 echo "Attempting to deploy migrations..."
-if ! npx prisma migrate deploy; then
-    echo "Migration deploy failed, attempting to fix schema..."
-    
-    # Apply the migration directly using psql
-    echo "Applying migration directly..."
-    PGPASSWORD=postgres psql -h db -U postgres -d scheduler -c "
-        ALTER TABLE \"Booking\" ADD COLUMN IF NOT EXISTS \"customerEmail\" TEXT;
-        UPDATE \"Booking\" SET \"customerEmail\" = 'no-email@example.com' WHERE \"customerEmail\" IS NULL;
-        ALTER TABLE \"Booking\" ALTER COLUMN \"customerEmail\" SET NOT NULL;
-    "
-    
-    # Mark migration as applied
-    echo "Marking migration as applied..."
-    npx prisma migrate resolve --applied 20240326_add_customer_email
-    
-    echo "Migration fixed and applied"
-fi
-
+npx prisma migrate deploy
 echo "Migrations deployed"
-
-# Generate Prisma client
-npx prisma generate
-
-# # Run seed script
-# npm run db:seed
 
 # Start the application
 npm run start
