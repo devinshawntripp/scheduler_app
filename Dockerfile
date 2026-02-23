@@ -12,8 +12,9 @@ COPY package*.json ./
 
 RUN rm -rf node_modules && rm -rf .cache && npm cache clean --force
 
-# Install dependencies
-RUN npm ci
+# Install ALL dependencies (including devDeps needed for build like tailwindcss)
+# Explicitly set NODE_ENV=development here so npm ci includes devDependencies
+RUN NODE_ENV=development npm ci
 
 # Copy the rest of the application code
 COPY . .
