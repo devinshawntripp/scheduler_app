@@ -4,34 +4,23 @@ services:
   app:
     build: .
     ports:
-      - "3001:3001"
+      - "${PORT:-3001}:${PORT:-3001}"
     environment:
-      - PORT=3001
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/scheduler
+      - PORT=${PORT:-3001}
+      - DATABASE_URL=${DATABASE_URL}
+      - SHADOW_DATABASE_URL=${SHADOW_DATABASE_URL}
       - SESSION_SECRET=${SESSION_SECRET}
-      - SMTP_HOST=mailhog
-      - SMTP_PORT=1025
-      - SMTP_USER=
-      - SMTP_PASS=
-      - SMTP_FROM=noreply@scheduler.com
-      - APP_URL=http://localhost:3001
-    depends_on:
-      - db
-      - mailhog
-
-  db:
-    image: postgres:13
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=scheduler
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-
-  mailhog:
-    image: mailhog/mailhog
-    ports:
-      - "8025:8025"
+      - SMTP_HOST=${SMTP_HOST:-localhost}
+      - SMTP_PORT=${SMTP_PORT:-25}
+      - SMTP_FROM=${SMTP_FROM:-noreply@schedule-everything.com}
+      - APP_URL=${APP_URL:-https://schedule-everything.com}
+      - NODE_ENV=${NODE_ENV:-production}
+      - APP_TIME_ZONE=${APP_TIME_ZONE:-America/Chicago}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - CHECK_DB_CONNECTION=${CHECK_DB_CONNECTION:-false}
 
 volumes:
   postgres_data:
