@@ -44,6 +44,15 @@ RUN chmod +x ./entrypoint.sh
 # Expose the port the app runs on
 EXPOSE 3001
 
+# Caddy docker-proxy labels so caddy-docker-proxy always routes to this container
+# regardless of how Coolify generates its internal docker-compose.yaml
+LABEL caddy_0="https://schedule-everything.com"
+LABEL caddy_0.handle_path="/*"
+LABEL caddy_0.handle_path.0_reverse_proxy="{{upstreams 3001}}"
+LABEL caddy_0.encode="zstd gzip"
+LABEL caddy_0.header="-Server"
+LABEL caddy_ingress_network="coolify"
+
 # Set the entrypoint
 ENTRYPOINT ["./entrypoint.sh"]
 
