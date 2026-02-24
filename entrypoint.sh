@@ -23,5 +23,10 @@ echo "Attempting to deploy migrations..."
 npx prisma migrate deploy
 echo "Migrations deployed"
 
+# Run seed (roles + optional default admin if missing)
+echo "Running database seed..."
+npm run db:seed
+echo "Seed completed"
+
 # Start the application
 npm run start

@@ -1,7 +1,7 @@
 import { google, calendar_v3 } from 'googleapis';
 import { authenticate } from '@google-cloud/local-auth';
 
-const SCOPES = ['https://www.googleapis.com/auth/calendar.readonly'];
+const SCOPES = ['https://www.googleapis.com/auth/calendar.events'];
 
 export async function getGoogleCalendarEvents(calendarId: string): Promise<calendar_v3.Schema$Event[] | undefined> {
   const keyFilePath = process.env.GOOGLE_APPLICATION_CREDENTIALS;

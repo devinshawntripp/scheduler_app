@@ -271,6 +271,7 @@ export async function updateUser(userId: string, data: Partial<{
   activeSubscription: boolean;
   apiKey: string;
   stripeCustomerId: string;
+  googleCalendarRefreshToken: string;
 }>) {
   return prisma.user.update({
     where: { id: userId },

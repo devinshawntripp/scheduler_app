@@ -20,6 +20,11 @@ export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
   const intent = formData.get("intent");
 
+  if (intent === "reset-google-calendar") {
+    await updateUser(userId, { googleCalendarRefreshToken: undefined });
+    return json({ success: true, message: "Google Calendar reset." });
+  }
+
   // Handle setting the teamOwnerId if the intent is provided
   if (intent === "set-team-owner-id") {
     await addTeamOwnerIdToUser(userId, userId);
@@ -94,6 +99,19 @@ export default function Profile() {
               </div>
             )}
           </div>
+        </div>
+
+        <div className="card bg-base-100 shadow-xl">
+          <form method="post">
+            <input type="hidden" name="intent" value="reset-google-calendar" />
+            {user.googleCalendarAccessToken ? (
+              <button type="submit" name="intent" value="reset-google-calendar" className="btn btn-primary w-full">
+                Reset Google Calendar
+              </button>
+            ) : (
+              <button type="submit" name="intent" value="connect-google-calendar" className="btn btn-primary w-full"> Connect Google Calendar</button>
+            )}
+          </form>
         </div>
 
         <AvailabilityManager availabilities={availability} />
